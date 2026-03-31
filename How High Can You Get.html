@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Click Stop Game</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            color: #ccff00;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 60px;
+            margin-top: 100px;
+            text-shadow: 0 0 10px #ccff00;
+        }
+
+        #counter {
+            font-size: 100px;
+            margin: 50px;
+            text-shadow: 0 0 20px #ccff00;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #leaderboard {
+            display: none;
+            margin-top: 50px;
+        }
+
+        input, button {
+            background: black;
+            color: #ccff00;
+            border: 2px solid #ccff00;
+            padding: 10px;
+            font-size: 20px;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Click to Stop!</h1>
+<div id="counter">0</div>
+
+<div id="leaderboard">
+    <h2>Leaderboard</h2>
+    <ol id="scores"></ol>
+
+    <input type="text" id="nameInput" placeholder="Your name">
+    <br>
+    <button onclick="saveScore()">Save Score</button>
+    <button onclick="location.reload()">Restart</button>
+</div>
+
+<script>
+let count = 0;
+let running = true;
+
+// 🔥 Speed multiplier
+let growth = 2;
+
+// Fast interval
+let interval = setInterval(() => {
+    if (running) {
+        count = count * growth + 1;
+        document.getElementById("counter").innerText = formatNumber(count);
+    }
+}, 20);
+
+// ✅ Click ANYWHERE to stop (robust version)
+document.addEventListener("click", () => {
+    if (!running) return;
+
+    running = false;
+    clearInterval(interval);
+    showLeaderboard();
+});
+
+// 🧠 Smart formatter (ONLY uses ^ if it doesn't fit)
+function formatNumber(num) {
+    if (!isFinite(num)) return "∞";
+
+    let counter = document.getElementById("counter");
+
+    let normal = Math.floor(num).toString();
+
+    counter.innerText = normal;
+
+    if (counter.scrollWidth <= counter.clientWidth) {
+        return normal;
+    }
+
+    let exponent = Math.floor(Math.log10(num));
+    let base = (num / Math.pow(10, exponent)).toFixed(2);
+
+    return base + " × 10^" + exponent;
+}
+
+// Leaderboard system
+let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
+
+function showLeaderboard() {
+    document.getElementById("leaderboard").style.display = "block";
+    updateLeaderboard();
+}
+
+function saveScore() {
+    let name = document.getElementById("nameInput").value || "Anonymous";
+
+    leaderboard.push({ name: name, score: count });
+
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 3);
+
+    localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
+
+    updateLeaderboard();
+}
+
+function updateLeaderboard() {
+    let list = document.getElementById("scores");
+    list.innerHTML = "";
+
+    leaderboard.forEach(entry => {
+        let li = document.createElement("li");
+        li.textContent = entry.name + " - " + formatNumber(entry.score);
+        list.appendChild(li);
+    });
+}
+</script>
+
+</body>
+</html>
