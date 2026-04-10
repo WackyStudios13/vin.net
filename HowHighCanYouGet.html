@@ -25,6 +25,7 @@
             text-shadow: 0 0 20px #ccff00;
             width: 100%;
             overflow: hidden;
+            white-space: nowrap;
         }
 
         #leaderboard {
@@ -65,11 +66,10 @@ let running = true;
 
 let growth = 2;
 
-// Infinite-safe counter
 let interval = setInterval(() => {
     if (!running) return;
 
-    mantissa = mantissa * growth + (1 / Math.pow(10, exponent));
+    mantissa *= growth;
 
     while (mantissa >= 10) {
         mantissa /= 10;
@@ -79,7 +79,6 @@ let interval = setInterval(() => {
     document.getElementById("counter").innerText = formatHuge();
 }, 20);
 
-// Click anywhere to stop
 document.addEventListener("click", () => {
     if (!running) return;
 
@@ -88,16 +87,22 @@ document.addEventListener("click", () => {
     showLeaderboard();
 });
 
-// Number formatting
 function formatHuge() {
-    if (exponent < 6) {
-        return Math.floor(mantissa * Math.pow(10, exponent)).toLocaleString();
+    const counter = document.getElementById("counter");
+
+    // Try full number first
+    let fullNumber = Math.floor(mantissa * Math.pow(10, exponent)).toLocaleString();
+
+    counter.innerText = fullNumber;
+
+    if (counter.scrollWidth <= counter.clientWidth && exponent < 308) {
+        return fullNumber;
     }
 
+    // Fallback to scientific notation if too large/wide
     return mantissa.toFixed(2) + " × 10^" + exponent;
 }
 
-// Leaderboard system
 let leaderboard = JSON.parse(localStorage.getItem("leaderboard")) || [];
 
 function showLeaderboard() {
@@ -143,3 +148,4 @@ function updateLeaderboard() {
 </body>
 </html>
 ```
+
