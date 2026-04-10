@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -58,21 +59,27 @@
 </div>
 
 <script>
-let count = 0;
+let mantissa = 1;
+let exponent = 0;
 let running = true;
 
-// 🔥 Speed multiplier
 let growth = 2;
 
-// Fast interval
+// Infinite-safe counter
 let interval = setInterval(() => {
-    if (running) {
-        count = count * growth + 1;
-        document.getElementById("counter").innerText = formatNumber(count);
+    if (!running) return;
+
+    mantissa = mantissa * growth + (1 / Math.pow(10, exponent));
+
+    while (mantissa >= 10) {
+        mantissa /= 10;
+        exponent++;
     }
+
+    document.getElementById("counter").innerText = formatHuge();
 }, 20);
 
-// ✅ Click ANYWHERE to stop (robust version)
+// Click anywhere to stop
 document.addEventListener("click", () => {
     if (!running) return;
 
@@ -81,24 +88,13 @@ document.addEventListener("click", () => {
     showLeaderboard();
 });
 
-// 🧠 Smart formatter (ONLY uses ^ if it doesn't fit)
-function formatNumber(num) {
-    if (!isFinite(num)) return "∞";
-
-    let counter = document.getElementById("counter");
-
-    let normal = Math.floor(num).toString();
-
-    counter.innerText = normal;
-
-    if (counter.scrollWidth <= counter.clientWidth) {
-        return normal;
+// Number formatting
+function formatHuge() {
+    if (exponent < 6) {
+        return Math.floor(mantissa * Math.pow(10, exponent)).toLocaleString();
     }
 
-    let exponent = Math.floor(Math.log10(num));
-    let base = (num / Math.pow(10, exponent)).toFixed(2);
-
-    return base + " × 10^" + exponent;
+    return mantissa.toFixed(2) + " × 10^" + exponent;
 }
 
 // Leaderboard system
@@ -112,9 +108,17 @@ function showLeaderboard() {
 function saveScore() {
     let name = document.getElementById("nameInput").value || "Anonymous";
 
-    leaderboard.push({ name: name, score: count });
+    leaderboard.push({
+        name: name,
+        mantissa: mantissa,
+        exponent: exponent
+    });
 
-    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard.sort((a, b) => {
+        if (b.exponent !== a.exponent) return b.exponent - a.exponent;
+        return b.mantissa - a.mantissa;
+    });
+
     leaderboard = leaderboard.slice(0, 3);
 
     localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
@@ -128,7 +132,9 @@ function updateLeaderboard() {
 
     leaderboard.forEach(entry => {
         let li = document.createElement("li");
-        li.textContent = entry.name + " - " + formatNumber(entry.score);
+        li.textContent =
+            entry.name + " - " +
+            entry.mantissa.toFixed(2) + " × 10^" + entry.exponent;
         list.appendChild(li);
     });
 }
@@ -136,3 +142,4 @@ function updateLeaderboard() {
 
 </body>
 </html>
+```
