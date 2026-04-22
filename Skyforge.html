@@ -121,7 +121,7 @@ function generateChunk(cx,cy){
     }
 
     // enemies
-    for(let i=0;i<3;i++){
+    for(let i=0;i<1;i++){
         enemies.push({
             x:cx*chunkSize+rand(0,chunkSize),
             y:cy*chunkSize+rand(0,chunkSize),
@@ -309,9 +309,7 @@ function drawUI(){
     ctx.font="20px Arial";
     ctx.fillText("HP: "+player.hp,20,25);
 
-    let cx=Math.floor(player.x/chunkSize);
-    let cy=Math.floor(player.y/chunkSize);
-    ctx.fillText("Chunk: "+cx+","+cy,20,50);
+    
 }
 
 // =====================
