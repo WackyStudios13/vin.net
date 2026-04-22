@@ -1,99 +1,300 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My Site</title>
-
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-
-        body {
-            background-image: url("FUNImages/IllusionBackdrop.jpeg");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 60px;
-            font-weight: bold;
-            color: white;
-            margin-top: 20px;
-            text-shadow: 0 0 10px black;
-        }
-
-        .box {
-            background-color: pink;
-            border: 5px solid white;
-            border-radius: 25px;
-            padding: 25px;
-            width: 700px;
-            margin: 60px auto;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-
-        /* Top-right buttons */
-        .top-buttons {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
-
-        .top-buttons a {
-            background-color: white;
-            color: black;
-            padding: 10px 15px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            font-family: Arial, sans-serif;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
-            margin-left: 10px;
-        }
-
-        .top-buttons a:first-child {
-            margin-left: 0;
-        }
-
-        .top-buttons a:hover {
-            background-color: lightgray;
-        }
-    </style>
+<title>Skyforge Singleplayer</title>
+<style>
+body{margin:0;overflow:hidden;background:black;color:white;font-family:Arial}
+canvas{display:block;background:#222}
+</style>
 </head>
-
 <body>
 
-    <!-- Top-right buttons -->
-    <div class="top-buttons">
-        <a href="about.html">About Me</a>
-        <a href="sites.html">My Sites</a>
-        <a href="Games.html">Minigames</a>
-    </div>
+<canvas id="game" width="1000" height="600"></canvas>
 
-    <h1>Welcome To My Dumb Site :)</h1>
+<script>
+// =====================
+// CANVAS
+// =====================
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
-    <div class="box">
-        <h2>Hello Have Fun On My Site</h2>
-        <p>I Will keep Making updates To This Site When I Can</p>
+// =====================
+// WORLD
+// =====================
+const world={width:3000,height:3000};
+let camera={x:0,y:0};
 
-        <iframe width="110" height="200"
-            src="https://www.myinstants.com/instant/elevator-music-background-5865/embed/"
-            frameborder="0"
-            scrolling="no">
-        </iframe>
+// =====================
+// IMAGES
+// =====================
+let playerImg=new Image();
+playerImg.src="https://i.imgur.com/vvy5GUS.png";
 
-        <p>So Yeah Have Fun On This Dumb Site!</p>
+let enemyImg=new Image();
+enemyImg.src="https://i.imgur.com/SgN0aoj.png";
 
-        <p>
-            I will keep updating this site. I will also add more to the minigames section :)
-        </p>
-    </div>
+// =====================
+// PLAYER
+// =====================
+let player={
+    x:500,
+    y:300,
+    size:50,
+    speed:4,
+    hp:100,
+    maxHp:100,
+    angle:0
+};
+
+// =====================
+// BULLETS
+// =====================
+let bullets=[];
+
+function shoot(){
+    bullets.push({
+        x:player.x,
+        y:player.y,
+        angle:player.angle,
+        speed:10
+    });
+}
+
+// =====================
+// ENEMIES
+// =====================
+let enemies=[];
+
+function spawnEnemy(){
+    enemies.push({
+        x:Math.random()*world.width,
+        y:Math.random()*world.height,
+        hp:3,
+        size:40,
+        vx:0,
+        vy:0
+    });
+}
+
+setInterval(spawnEnemy,2500);
+
+// =====================
+// CAVES
+// =====================
+let caves=[];
+for(let i=0;i<15;i++){
+    caves.push({
+        x:Math.random()*world.width,
+        y:Math.random()*world.height,
+        r:70+Math.random()*70
+    });
+}
+
+function tryEnterCave(){
+    caves.forEach(c=>{
+        let dx=player.x-c.x;
+        let dy=player.y-c.y;
+        if(dx*dx+dy*dy<c.r*c.r){
+            player.x=c.x+100;
+            player.y=c.y+100;
+        }
+    });
+}
+
+// =====================
+// INPUT
+// =====================
+let keys={};
+
+document.addEventListener("keydown",e=>{
+    keys[e.key.toLowerCase()]=true;
+
+    if(e.key===" ") shoot();
+    if(e.key.toLowerCase()==="e") tryEnterCave();
+});
+
+document.addEventListener("keyup",e=>{
+    keys[e.key.toLowerCase()]=false;
+});
+
+canvas.addEventListener("mousemove",e=>{
+    let r=canvas.getBoundingClientRect();
+    player.angle=Math.atan2(
+        e.clientY-r.top-canvas.height/2,
+        e.clientX-r.left-canvas.width/2
+    );
+});
+
+// =====================
+// UPDATE
+// =====================
+function updatePlayer(){
+    if(keys["w"]||keys["arrowup"]) player.y-=player.speed;
+    if(keys["s"]||keys["arrowdown"]) player.y+=player.speed;
+    if(keys["a"]||keys["arrowleft"]) player.x-=player.speed;
+    if(keys["d"]||keys["arrowright"]) player.x+=player.speed;
+
+    player.x=Math.max(0,Math.min(world.width,player.x));
+    player.y=Math.max(0,Math.min(world.height,player.y));
+}
+
+function updateEnemies(){
+    enemies.forEach(e=>{
+        let dx=player.x-e.x;
+        let dy=player.y-e.y;
+        let d=Math.hypot(dx,dy)||1;
+
+        if(d<500){
+            e.x+=dx/d*1.2;
+            e.y+=dy/d*1.2;
+        }
+    });
+}
+
+// =====================
+// COLLISION
+// =====================
+function collision(){
+
+    bullets.forEach((b,bi)=>{
+        enemies.forEach((e,ei)=>{
+            let dx=e.x-b.x;
+            let dy=e.y-b.y;
+
+            if(dx*dx+dy*dy<1600){
+                e.hp--;
+                bullets.splice(bi,1);
+
+                if(e.hp<=0) enemies.splice(ei,1);
+            }
+        });
+    });
+
+    enemies.forEach(e=>{
+        let dx=e.x-player.x;
+        let dy=e.y-player.y;
+
+        if(dx*dx+dy*dy<1600){
+            player.hp--;
+
+            if(player.hp<=0){
+                player.hp=player.maxHp;
+                player.x=500;
+                player.y=300;
+            }
+        }
+    });
+}
+
+// =====================
+// CAMERA
+// =====================
+function updateCamera(){
+    camera.x=player.x-canvas.width/2;
+    camera.y=player.y-canvas.height/2;
+}
+
+// =====================
+// DRAW WORLD
+// =====================
+function drawMap(){
+    ctx.fillStyle="#2d7a2d";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    for(let i=0;i<80;i++){
+        let x=(i*170)%world.width-camera.x;
+        let y=(i*240)%world.height-camera.y;
+        ctx.fillStyle="#555";
+        ctx.fillRect(x,y,20,20);
+    }
+
+    for(let i=0;i<60;i++){
+        let x=(i*230)%world.width-camera.x;
+        let y=(i*300)%world.height-camera.y;
+        ctx.fillStyle="#5b3a1f";
+        ctx.fillRect(x+8,y+20,8,20);
+
+        ctx.beginPath();
+        ctx.fillStyle="green";
+        ctx.arc(x+12,y+15,18,0,Math.PI*2);
+        ctx.fill();
+    }
+}
+
+function drawCaves(){
+    caves.forEach(c=>{
+        let x=c.x-camera.x;
+        let y=c.y-camera.y;
+
+        let g=ctx.createRadialGradient(x,y,10,x,y,c.r);
+        g.addColorStop(0,"black");
+        g.addColorStop(1,"#333");
+
+        ctx.fillStyle=g;
+        ctx.beginPath();
+        ctx.arc(x,y,c.r,0,Math.PI*2);
+        ctx.fill();
+    });
+}
+
+// =====================
+// DRAW ENTITIES
+// =====================
+function drawPlayer(){
+    ctx.save();
+    ctx.translate(player.x-camera.x,player.y-camera.y);
+    ctx.rotate(player.angle);
+    ctx.drawImage(playerImg,-25,-25,50,50);
+    ctx.restore();
+}
+
+function drawEnemies(){
+    enemies.forEach(e=>{
+        ctx.drawImage(enemyImg,e.x-camera.x-25,e.y-camera.y-25,50,50);
+    });
+}
+
+function drawBullets(){
+    bullets.forEach(b=>{
+        b.x+=Math.cos(b.angle)*b.speed;
+        b.y+=Math.sin(b.angle)*b.speed;
+
+        ctx.fillStyle="white";
+        ctx.beginPath();
+        ctx.arc(b.x-camera.x,b.y-camera.y,5,0,Math.PI*2);
+        ctx.fill();
+    });
+}
+
+function drawUI(){
+    ctx.fillStyle="white";
+    ctx.font="20px Arial";
+    ctx.fillText("HP: "+player.hp,20,25);
+}
+
+// =====================
+// LOOP
+// =====================
+function loop(){
+    updatePlayer();
+    updateEnemies();
+    collision();
+    updateCamera();
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    drawMap();
+    drawCaves();
+    drawEnemies();
+    drawBullets();
+    drawPlayer();
+    drawUI();
+
+    requestAnimationFrame(loop);
+}
+
+loop();
+</script>
 
 </body>
 </html>
