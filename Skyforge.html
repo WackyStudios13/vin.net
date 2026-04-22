@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Skyforge Singleplayer</title>
+<title>Skyforge Infinite Chunks</title>
 <style>
 html,body{
     margin:0;
@@ -9,14 +9,13 @@ html,body{
     height:100%;
     overflow:hidden;
     background:black;
-    color:white;
     font-family:Arial;
 }
 canvas{
     display:block;
-    background:#222;
     width:100vw;
     height:100vh;
+    background:#222;
 }
 </style>
 </head>
@@ -41,7 +40,8 @@ resizeCanvas();
 // =====================
 // WORLD
 // =====================
-const world={width:3000,height:3000};
+const chunkSize=600;
+const chunks={};
 let camera={x:0,y:0};
 
 // =====================
@@ -57,9 +57,8 @@ enemyImg.src="https://i.imgur.com/SgN0aoj.png";
 // PLAYER
 // =====================
 let player={
-    x:500,
-    y:300,
-    size:50,
+    x:0,
+    y:0,
     speed:4,
     hp:100,
     maxHp:100,
@@ -67,58 +66,81 @@ let player={
 };
 
 // =====================
-// BULLETS
+// DATA
 // =====================
 let bullets=[];
-
-function shoot(){
-    bullets.push({
-        x:player.x,
-        y:player.y,
-        angle:player.angle,
-        speed:10
-    });
-}
-
-// =====================
-// ENEMIES
-// =====================
 let enemies=[];
 
-function spawnEnemy(){
-    enemies.push({
-        x:Math.random()*world.width,
-        y:Math.random()*world.height,
-        hp:3,
-        size:40,
-        vx:0,
-        vy:0
-    });
+// =====================
+// HELPERS
+// =====================
+function rand(min,max){
+    return Math.random()*(max-min)+min;
 }
 
-setInterval(spawnEnemy,2500);
-
-// =====================
-// CAVES
-// =====================
-let caves=[];
-for(let i=0;i<15;i++){
-    caves.push({
-        x:Math.random()*world.width,
-        y:Math.random()*world.height,
-        r:70+Math.random()*70
-    });
+function chunkKey(cx,cy){
+    return cx+","+cy;
 }
 
-function tryEnterCave(){
-    caves.forEach(c=>{
-        let dx=player.x-c.x;
-        let dy=player.y-c.y;
-        if(dx*dx+dy*dy<c.r*c.r){
-            player.x=c.x+100;
-            player.y=c.y+100;
+// =====================
+// CHUNK GENERATION
+// =====================
+function generateChunk(cx,cy){
+    let key=chunkKey(cx,cy);
+    if(chunks[key]) return;
+
+    let chunk={
+        rocks:[],
+        trees:[],
+        caves:[]
+    };
+
+    // rocks
+    for(let i=0;i<5;i++){
+        chunk.rocks.push({
+            x:cx*chunkSize+rand(0,chunkSize),
+            y:cy*chunkSize+rand(0,chunkSize)
+        });
+    }
+
+    // trees
+    for(let i=0;i<7;i++){
+        chunk.trees.push({
+            x:cx*chunkSize+rand(0,chunkSize),
+            y:cy*chunkSize+rand(0,chunkSize)
+        });
+    }
+
+    // caves
+    for(let i=0;i<2;i++){
+        chunk.caves.push({
+            x:cx*chunkSize+rand(0,chunkSize),
+            y:cy*chunkSize+rand(0,chunkSize),
+            r:50+Math.random()*40
+        });
+    }
+
+    // enemies
+    for(let i=0;i<3;i++){
+        enemies.push({
+            x:cx*chunkSize+rand(0,chunkSize),
+            y:cy*chunkSize+rand(0,chunkSize),
+            hp:3
+        });
+    }
+
+    chunks[key]=chunk;
+}
+
+function loadNearbyChunks(){
+    let pcx=Math.floor(player.x/chunkSize);
+    let pcy=Math.floor(player.y/chunkSize);
+
+    for(let y=-2;y<=2;y++){
+        for(let x=-2;x<=2;x++){
+            generateChunk(pcx+x,pcy+y);
         }
-    });
+    }
 }
 
 // =====================
@@ -128,9 +150,7 @@ let keys={};
 
 document.addEventListener("keydown",e=>{
     keys[e.key.toLowerCase()]=true;
-
     if(e.key===" ") shoot();
-    if(e.key.toLowerCase()==="e") tryEnterCave();
 });
 
 document.addEventListener("keyup",e=>{
@@ -146,6 +166,18 @@ canvas.addEventListener("mousemove",e=>{
 });
 
 // =====================
+// SHOOT
+// =====================
+function shoot(){
+    bullets.push({
+        x:player.x,
+        y:player.y,
+        angle:player.angle,
+        speed:10
+    });
+}
+
+// =====================
 // UPDATE
 // =====================
 function updatePlayer(){
@@ -153,9 +185,6 @@ function updatePlayer(){
     if(keys["s"]||keys["arrowdown"]) player.y+=player.speed;
     if(keys["a"]||keys["arrowleft"]) player.x-=player.speed;
     if(keys["d"]||keys["arrowright"]) player.x+=player.speed;
-
-    player.x=Math.max(0,Math.min(world.width,player.x));
-    player.y=Math.max(0,Math.min(world.height,player.y));
 }
 
 function updateEnemies(){
@@ -165,26 +194,20 @@ function updateEnemies(){
         let d=Math.hypot(dx,dy)||1;
 
         if(d<500){
-            e.x+=dx/d*1.2;
-            e.y+=dy/d*1.2;
+            e.x+=dx/d*1.1;
+            e.y+=dy/d*1.1;
         }
     });
 }
 
-// =====================
-// COLLISION
-// =====================
 function collision(){
-
     bullets.forEach((b,bi)=>{
         enemies.forEach((e,ei)=>{
             let dx=e.x-b.x;
             let dy=e.y-b.y;
-
             if(dx*dx+dy*dy<1600){
                 e.hp--;
                 bullets.splice(bi,1);
-
                 if(e.hp<=0) enemies.splice(ei,1);
             }
         });
@@ -193,73 +216,68 @@ function collision(){
     enemies.forEach(e=>{
         let dx=e.x-player.x;
         let dy=e.y-player.y;
-
         if(dx*dx+dy*dy<1600){
             player.hp--;
-
             if(player.hp<=0){
-                player.hp=player.maxHp;
-                player.x=500;
-                player.y=300;
+                player.hp=100;
+                player.x=0;
+                player.y=0;
             }
         }
     });
 }
 
-// =====================
-// CAMERA
-// =====================
 function updateCamera(){
     camera.x=player.x-canvas.width/2;
     camera.y=player.y-canvas.height/2;
 }
 
 // =====================
-// DRAW WORLD
+// DRAW
 // =====================
-function drawMap(){
+function drawGround(){
     ctx.fillStyle="#2d7a2d";
     ctx.fillRect(0,0,canvas.width,canvas.height);
+}
 
-    for(let i=0;i<80;i++){
-        let x=(i*170)%world.width-camera.x;
-        let y=(i*240)%world.height-camera.y;
-        ctx.fillStyle="#555";
-        ctx.fillRect(x,y,20,20);
-    }
+function drawChunks(){
+    for(let key in chunks){
+        let c=chunks[key];
 
-    for(let i=0;i<60;i++){
-        let x=(i*230)%world.width-camera.x;
-        let y=(i*300)%world.height-camera.y;
-        ctx.fillStyle="#5b3a1f";
-        ctx.fillRect(x+8,y+20,8,20);
+        // rocks
+        ctx.fillStyle="#666";
+        c.rocks.forEach(r=>{
+            ctx.fillRect(r.x-camera.x,r.y-camera.y,20,20);
+        });
 
-        ctx.beginPath();
-        ctx.fillStyle="green";
-        ctx.arc(x+12,y+15,18,0,Math.PI*2);
-        ctx.fill();
+        // trees
+        c.trees.forEach(t=>{
+            ctx.fillStyle="#5b3a1f";
+            ctx.fillRect(t.x-camera.x+8,t.y-camera.y+20,8,20);
+
+            ctx.beginPath();
+            ctx.fillStyle="green";
+            ctx.arc(t.x-camera.x+12,t.y-camera.y+15,18,0,Math.PI*2);
+            ctx.fill();
+        });
+
+        // caves
+        c.caves.forEach(cv=>{
+            let x=cv.x-camera.x;
+            let y=cv.y-camera.y;
+
+            let g=ctx.createRadialGradient(x,y,10,x,y,cv.r);
+            g.addColorStop(0,"black");
+            g.addColorStop(1,"#333");
+
+            ctx.fillStyle=g;
+            ctx.beginPath();
+            ctx.arc(x,y,cv.r,0,Math.PI*2);
+            ctx.fill();
+        });
     }
 }
 
-function drawCaves(){
-    caves.forEach(c=>{
-        let x=c.x-camera.x;
-        let y=c.y-camera.y;
-
-        let g=ctx.createRadialGradient(x,y,10,x,y,c.r);
-        g.addColorStop(0,"black");
-        g.addColorStop(1,"#333");
-
-        ctx.fillStyle=g;
-        ctx.beginPath();
-        ctx.arc(x,y,c.r,0,Math.PI*2);
-        ctx.fill();
-    });
-}
-
-// =====================
-// DRAW ENTITIES
-// =====================
 function drawPlayer(){
     ctx.save();
     ctx.translate(player.x-camera.x,player.y-camera.y);
@@ -290,12 +308,17 @@ function drawUI(){
     ctx.fillStyle="white";
     ctx.font="20px Arial";
     ctx.fillText("HP: "+player.hp,20,25);
+
+    let cx=Math.floor(player.x/chunkSize);
+    let cy=Math.floor(player.y/chunkSize);
+    ctx.fillText("Chunk: "+cx+","+cy,20,50);
 }
 
 // =====================
 // LOOP
 // =====================
 function loop(){
+    loadNearbyChunks();
     updatePlayer();
     updateEnemies();
     collision();
@@ -303,8 +326,8 @@ function loop(){
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    drawMap();
-    drawCaves();
+    drawGround();
+    drawChunks();
     drawEnemies();
     drawBullets();
     drawPlayer();
