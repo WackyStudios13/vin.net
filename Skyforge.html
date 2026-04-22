@@ -3,13 +3,26 @@
 <head>
 <title>Skyforge Singleplayer</title>
 <style>
-body{margin:0;overflow:hidden;background:black;color:white;font-family:Arial}
-canvas{display:block;background:#222}
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:black;
+    color:white;
+    font-family:Arial;
+}
+canvas{
+    display:block;
+    background:#222;
+    width:100vw;
+    height:100vh;
+}
 </style>
 </head>
 <body>
 
-<canvas id="game" width="1000" height="600"></canvas>
+<canvas id="game"></canvas>
 
 <script>
 // =====================
@@ -17,6 +30,13 @@ canvas{display:block;background:#222}
 // =====================
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
+
+function resizeCanvas(){
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+}
+window.addEventListener("resize",resizeCanvas);
+resizeCanvas();
 
 // =====================
 // WORLD
