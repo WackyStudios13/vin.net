@@ -1,341 +1,208 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Skyforge Infinite Chunks</title>
-<style>
-html,body{
-    margin:0;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:black;
-    font-family:Arial;
-}
-canvas{
-    display:block;
-    width:100vw;
-    height:100vh;
-    background:#222;
-}
-</style>
+    <title>Skyforge Infinite</title>
+    <style>body { margin:0; background:#222; color:white; overflow:hidden; font-family:Arial; } canvas { display:block; }</style>
 </head>
 <body>
-
 <canvas id="game"></canvas>
-
 <script>
-// =====================
-// CANVAS
-// =====================
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+window.addEventListener("resize", resize); resize();
+const rand = (min, max) => Math.random() * (max - min) + min;
 
-function resizeCanvas(){
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
-}
-window.addEventListener("resize",resizeCanvas);
-resizeCanvas();
+let bgMusic = new Audio("Before-The-Sirens.mp3"); bgMusic.loop = true;
+const pSpeech = new Audio("PrincessFirstMission.mp3");
+const castleMusic = new Audio("Just-Getting-Together.mp3"); castleMusic.loop = true;
+const loveMusic = new Audio("FellInLove.mp3"); loveMusic.loop = true;
 
-// =====================
-// WORLD
-// =====================
-const chunkSize=600;
-const chunks={};
-let camera={x:0,y:0};
+let musicStarted = false, cheatBuffer = "", isCheatActive = false;
 
-// =====================
-// IMAGES
-// =====================
-let playerImg=new Image();
-playerImg.src="https://i.imgur.com/vvy5GUS.png";
-
-let enemyImg=new Image();
-enemyImg.src="https://i.imgur.com/SgN0aoj.png";
-
-// =====================
-// PLAYER
-// =====================
-let player={
-    x:0,
-    y:0,
-    speed:4,
-    hp:100,
-    maxHp:100,
-    angle:0
-};
-
-// =====================
-// DATA
-// =====================
-let bullets=[];
-let enemies=[];
-
-// =====================
-// HELPERS
-// =====================
-function rand(min,max){
-    return Math.random()*(max-min)+min;
-}
-
-function chunkKey(cx,cy){
-    return cx+","+cy;
-}
-
-// =====================
-// CHUNK GENERATION
-// =====================
-function generateChunk(cx,cy){
-    let key=chunkKey(cx,cy);
-    if(chunks[key]) return;
-
-    let chunk={
-        rocks:[],
-        trees:[],
-        caves:[]
-    };
-
-    // rocks
-    for(let i=0;i<5;i++){
-        chunk.rocks.push({
-            x:cx*chunkSize+rand(0,chunkSize),
-            y:cy*chunkSize+rand(0,chunkSize)
-        });
-    }
-
-    // trees
-    for(let i=0;i<7;i++){
-        chunk.trees.push({
-            x:cx*chunkSize+rand(0,chunkSize),
-            y:cy*chunkSize+rand(0,chunkSize)
-        });
-    }
-
-    // caves
-    for(let i=0;i<1;i++){
-        chunk.caves.push({
-            x:cx*chunkSize+rand(0,chunkSize),
-            y:cy*chunkSize+rand(0,chunkSize),
-            r:50+Math.random()*40
-        });
-    }
-
-    // enemies
-    for(let i=0;i<1;i++){
-        enemies.push({
-            x:cx*chunkSize+rand(0,chunkSize),
-            y:cy*chunkSize+rand(0,chunkSize),
-            hp:3
-        });
-    }
-
-    chunks[key]=chunk;
-}
-
-function loadNearbyChunks(){
-    let pcx=Math.floor(player.x/chunkSize);
-    let pcy=Math.floor(player.y/chunkSize);
-
-    for(let y=-2;y<=2;y++){
-        for(let x=-2;x<=2;x++){
-            generateChunk(pcx+x,pcy+y);
-        }
-    }
-}
-
-// =====================
-// INPUT
-// =====================
-let keys={};
-
-document.addEventListener("keydown",e=>{
-    keys[e.key.toLowerCase()]=true;
-    if(e.key===" ") shoot();
-});
-
-document.addEventListener("keyup",e=>{
-    keys[e.key.toLowerCase()]=false;
-});
-
-canvas.addEventListener("mousemove",e=>{
-    let r=canvas.getBoundingClientRect();
-    player.angle=Math.atan2(
-        e.clientY-r.top-canvas.height/2,
-        e.clientX-r.left-canvas.width/2
-    );
-});
-
-// =====================
-// SHOOT
-// =====================
-function shoot(){
-    bullets.push({
-        x:player.x,
-        y:player.y,
-        angle:player.angle,
-        speed:10
-    });
-}
-
-// =====================
-// UPDATE
-// =====================
-function updatePlayer(){
-    if(keys["w"]||keys["arrowup"]) player.y-=player.speed;
-    if(keys["s"]||keys["arrowdown"]) player.y+=player.speed;
-    if(keys["a"]||keys["arrowleft"]) player.x-=player.speed;
-    if(keys["d"]||keys["arrowright"]) player.x+=player.speed;
-}
-
-function updateEnemies(){
-    enemies.forEach(e=>{
-        let dx=player.x-e.x;
-        let dy=player.y-e.y;
-        let d=Math.hypot(dx,dy)||1;
-
-        if(d<500){
-            e.x+=dx/d*1.1;
-            e.y+=dy/d*1.1;
-        }
-    });
-}
-
-function collision(){
-    bullets.forEach((b,bi)=>{
-        enemies.forEach((e,ei)=>{
-            let dx=e.x-b.x;
-            let dy=e.y-b.y;
-            if(dx*dx+dy*dy<1600){
-                e.hp--;
-                bullets.splice(bi,1);
-                if(e.hp<=0) enemies.splice(ei,1);
-            }
-        });
-    });
-
-    enemies.forEach(e=>{
-        let dx=e.x-player.x;
-        let dy=e.y-player.y;
-        if(dx*dx+dy*dy<1600){
-            player.hp--;
-            if(player.hp<=0){
-                player.hp=100;
-                player.x=0;
-                player.y=0;
-            }
-        }
-    });
-}
-
-function updateCamera(){
-    camera.x=player.x-canvas.width/2;
-    camera.y=player.y-canvas.height/2;
-}
-
-// =====================
-// DRAW
-// =====================
-function drawGround(){
-    ctx.fillStyle="#2d7a2d";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-}
-
-function drawChunks(){
-    for(let key in chunks){
-        let c=chunks[key];
-
-        // rocks
-        ctx.fillStyle="#666";
-        c.rocks.forEach(r=>{
-            ctx.fillRect(r.x-camera.x,r.y-camera.y,20,20);
-        });
-
-        // trees
-        c.trees.forEach(t=>{
-            ctx.fillStyle="#5b3a1f";
-            ctx.fillRect(t.x-camera.x+8,t.y-camera.y+20,8,20);
-
-            ctx.beginPath();
-            ctx.fillStyle="green";
-            ctx.arc(t.x-camera.x+12,t.y-camera.y+15,18,0,Math.PI*2);
-            ctx.fill();
-        });
-
-        // caves
-        c.caves.forEach(cv=>{
-            let x=cv.x-camera.x;
-            let y=cv.y-camera.y;
-
-            let g=ctx.createRadialGradient(x,y,10,x,y,cv.r);
-            g.addColorStop(0,"black");
-            g.addColorStop(1,"#333");
-
-            ctx.fillStyle=g;
-            ctx.beginPath();
-            ctx.arc(x,y,cv.r,0,Math.PI*2);
-            ctx.fill();
-        });
-    }
-}
-
-function drawPlayer(){
-    ctx.save();
-    ctx.translate(player.x-camera.x,player.y-camera.y);
-    ctx.rotate(player.angle);
-    ctx.drawImage(playerImg,-25,-25,50,50);
-    ctx.restore();
-}
-
-function drawEnemies(){
-    enemies.forEach(e=>{
-        ctx.drawImage(enemyImg,e.x-camera.x-25,e.y-camera.y-25,50,50);
-    });
-}
-
-function drawBullets(){
-    bullets.forEach(b=>{
-        b.x+=Math.cos(b.angle)*b.speed;
-        b.y+=Math.sin(b.angle)*b.speed;
-
-        ctx.fillStyle="white";
-        ctx.beginPath();
-        ctx.arc(b.x-camera.x,b.y-camera.y,5,0,Math.PI*2);
-        ctx.fill();
-    });
-}
-
-function drawUI(){
-    ctx.fillStyle="white";
-    ctx.font="20px Arial";
-    ctx.fillText("HP: "+player.hp,20,25);
-
+window.addEventListener("keydown", (e) => { 
+    if(!musicStarted) { bgMusic.play().catch(()=>{}); musicStarted = true; }
     
+    cheatBuffer += e.key.toLowerCase();
+    if (cheatBuffer.endsWith("love") && !isCheatActive) {
+        isCheatActive = true;
+        bgMusic.pause();
+        bgMusic = loveMusic;
+        if (!inCastle) bgMusic.play();
+    }
+    if (cheatBuffer.length > 10) cheatBuffer = cheatBuffer.slice(-10);
+
+    if (shopOpen) {
+        if(e.key === '1' && coins >= 20) { player.dmg += 0.5; coins -= 20; }
+        if(e.key === '2' && coins >= 40) { hp += 20; coins -= 40; }
+        if(e.key === '3' && coins >= 10 && player.reloadUpgrades < 4) { 
+            player.reloadSpeed -= 1; 
+            player.reloadUpgrades++; 
+            coins -= 10; 
+        }
+    }
+    if (e.key.toLowerCase() === 'e') {
+        let onCastle = (player.x >= 1000 && player.x <= 3000 && player.y >= 1000 && player.y <= 3000);
+        if (!inCastle && onCastle) { 
+            bgMusic.pause(); 
+            castleMusic.play(); 
+            inCastle = true; 
+            player.x=500; player.y=500; 
+        }
+        else if (inCastle) {
+            if (Math.hypot(player.x - 550, player.y - 550) < 150) { 
+                pSpeech.play(); 
+                pSpeech.onended = () => { missionActive = true; zombiesKilled = 0; };
+            } else { 
+                castleMusic.pause(); 
+                bgMusic.play(); 
+                inCastle = false; 
+                player.x = 1500; player.y = 1500; 
+            }
+        }
+    }
+});
+
+const img = { player: new Image(), castle: new Image(), enemy: new Image(), inside: new Image(), rock: new Image(), princess: new Image(), tree: new Image(), shop: new Image() };
+const sources = { player: "KnightPixels.png", castle: "Castle.png", enemy: "pixil-frame-0__2_-removebg-preview.png", inside: "InsideCastle.png", rock: "rock.png", princess: "Princess.png", tree: "Tree.png", shop: "ShopImage.png" };
+Object.keys(img).forEach(key => img[key].src = sources[key]);
+
+let inCastle = false, shopOpen = false, hp = 100, coins = 0, zombiesKilled = 0, missionActive = false, keys = {}, bullets = [], chunks = {};
+let player = { x: 0, y: 0, speed: 7, angle: 0, dmg: 1, reloadSpeed: 500, reloadUpgrades: 0, lastShot: 0 };
+const chunkSize = 600;
+
+function generateChunk(cx, cy) {
+    let key = cx + "," + cy;
+    if (chunks[key]) return;
+    let hasCastle = (cx >= 1 && cx <= 3 && cy >= 1 && cy <= 3);
+    let chunk = { rocks: [], trees: [], enemies: [], shops: [], hasCastle };
+    if (!hasCastle) {
+        for(let i=0; i<5; i++) chunk.rocks.push({ x: cx*chunkSize+rand(0,chunkSize), y: cy*chunkSize+rand(0,chunkSize) });
+        for(let i=0; i<7; i++) chunk.trees.push({ x: cx*chunkSize+rand(0,chunkSize), y: cy*chunkSize+rand(0,chunkSize) });
+        for(let i=0; i<1; i++) {
+            chunk.enemies.push({ x: cx*chunkSize+rand(0,chunkSize), y: cy*chunkSize+rand(0,chunkSize), hp: 3 });
+        }
+        if (Math.random() < 0.1) chunk.shops.push({ x: cx*chunkSize+rand(0,chunkSize), y: cy*chunkSize+rand(0,chunkSize) });
+    }
+    chunks[key] = chunk;
 }
 
-// =====================
-// LOOP
-// =====================
-function loop(){
-    loadNearbyChunks();
-    updatePlayer();
-    updateEnemies();
-    collision();
-    updateCamera();
+window.addEventListener("keydown", e => {
+    keys[e.key.toLowerCase()] = true;
+    if (e.key.toLowerCase() === 't') shopOpen = !shopOpen;
+    if (e.key.toLowerCase() === 'x') shopOpen = false;
+    if (e.code === "Space" && !shopOpen && !inCastle) {
+        let now = Date.now();
+        if (now - player.lastShot > player.reloadSpeed) {
+            bullets.push({x: player.x, y: player.y, angle: player.angle, speed: 12});
+            player.lastShot = now;
+        }
+    }
+});
+window.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+window.addEventListener("mousemove", e => { player.angle = Math.atan2(e.clientY - canvas.height/2, e.clientX - canvas.width/2); });
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function loop() {
+    if (hp <= 0) { hp = 100; coins = 0; player.x = 0; player.y = 0; inCastle = false; bgMusic.play(); castleMusic.pause(); }
 
-    drawGround();
-    drawChunks();
-    drawEnemies();
-    drawBullets();
-    drawPlayer();
-    drawUI();
+    if(!shopOpen) {
+        let nextX = player.x + (keys["d"] ? player.speed : keys["a"] ? -player.speed : 0);
+        let nextY = player.y + (keys["s"] ? player.speed : keys["w"] ? -player.speed : 0);
+        let collision = false;
+        if (!inCastle) {
+            let pcx = Math.floor(player.x / chunkSize), pcy = Math.floor(player.y / chunkSize);
+            for(let x = -1; x <= 1; x++) for(let y = -1; y <= 1; y++) {
+                let c = chunks[(pcx+x) + "," + (pcy+y)];
+                if(c) {
+                    c.rocks.forEach(r => { if(Math.hypot(nextX - r.x, nextY - r.y) < 30) collision = true; });
+                    c.trees.forEach(t => { if(Math.hypot(nextX - t.x, nextY - t.y) < 35) collision = true; });
+                }
+            }
+        }
+        if(!collision) { player.x = nextX; player.y = nextY; }
+    }
+    
+    let camX = player.x - canvas.width/2, camY = player.y - canvas.height/2;
+    ctx.clearRect(0,0, canvas.width, canvas.height);
+    ctx.fillStyle = "#2d7a2d"; ctx.fillRect(0,0, canvas.width, canvas.height);
 
+    if (inCastle) {
+        ctx.fillStyle = "#333"; ctx.fillRect(0,0, canvas.width, canvas.height);
+        let tileSize = 2000;
+        let startX = Math.floor(player.x / tileSize) * tileSize;
+        let startY = Math.floor(player.y / tileSize) * tileSize;
+        for(let i = -1; i <= 2; i++) for(let j = -1; j <= 2; j++) {
+            ctx.drawImage(img.inside, (startX + i * tileSize) - camX, (startY + j * tileSize) - camY, tileSize, tileSize);
+        }
+        ctx.drawImage(img.princess, 500 - camX, 500 - camY, 100, 100);
+    } else {
+        let pcx = Math.floor(player.x / chunkSize), pcy = Math.floor(player.y / chunkSize);
+        for(let x = -2; x <= 2; x++) for(let y = -2; y <= 2; y++) generateChunk(pcx + x, pcy + y);
+        for(let key in chunks) {
+            let c = chunks[key];
+            if(c.hasCastle) ctx.drawImage(img.castle, 1000 - camX, 1000 - camY, 2000, 2000);
+            else {
+                c.rocks.forEach(r => ctx.drawImage(img.rock, r.x - camX, r.y - camY, 40, 40));
+                c.trees.forEach(t => ctx.drawImage(img.tree, t.x - camX, t.y - camY, 50, 70));
+                c.shops.forEach(s => ctx.drawImage(img.shop, s.x - camX, s.y - camY, 60, 60));
+                if(!shopOpen) {
+                    c.enemies.forEach(z => {
+                        let dx = player.x - z.x, dy = player.y - z.y, dist = Math.hypot(dx, dy);
+                        if(dist < 800 && dist > 50) { z.x += (dx/dist)*1.5; z.y += (dy/dist)*1.5; }
+                        if(dist < 50) hp = Math.max(0, hp - 0.2);
+                        ctx.drawImage(img.enemy, z.x - camX, z.y - camY, 50, 50);
+                    });
+                } else { c.enemies.forEach(z => ctx.drawImage(img.enemy, z.x - camX, z.y - camY, 50, 50)); }
+            }
+        }
+    }
+
+    if(!shopOpen) {
+        for (let bi = bullets.length - 1; bi >= 0; bi--) {
+            let b = bullets[bi];
+            b.x += Math.cos(b.angle) * b.speed; b.y += Math.sin(b.angle) * b.speed;
+            let hit = false;
+            for (let key in chunks) {
+                chunks[key].enemies.forEach((z, zi) => {
+                    if (Math.hypot(b.x - z.x, b.y - z.y) < 30) {
+                        z.hp -= player.dmg; hit = true; bullets.splice(bi, 1);
+                        if (z.hp <= 0) { 
+                            chunks[key].enemies.splice(zi, 1); 
+                            if(missionActive) {
+                                zombiesKilled++; 
+                                if(zombiesKilled >= 20) { coins += 20; missionActive = false; }
+                            }
+                        }
+                    }
+                });
+            }
+            if (!hit) { ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(b.x - camX, b.y - camY, 5, 0, 7); ctx.fill(); }
+        }
+    }
+
+    ctx.save(); ctx.translate(canvas.width/2, canvas.height/2); ctx.rotate(player.angle);
+    ctx.drawImage(img.player, -25, -25, 50, 50); ctx.restore();
+
+    ctx.fillStyle = "white"; ctx.font = "20px Arial";
+    ctx.textAlign = "left"; ctx.fillText("HP: " + Math.floor(hp), 20, 30);
+    ctx.textAlign = "right"; ctx.fillText("Coins: " + coins, canvas.width - 20, 30);
+    if(missionActive) ctx.fillText("Zombies: " + zombiesKilled + "/20", canvas.width - 20, 60);
+    ctx.textAlign = "left"; ctx.fillText("Press T for Shop", 20, canvas.height - 20);
+    
+    if(!inCastle && (player.x >= 1000 && player.x <= 3000 && player.y >= 1000 && player.y <= 3000)) ctx.fillText("Press E to Enter", 20, 90);
+    if(inCastle) ctx.fillText(Math.hypot(player.x - 550, player.y - 550) < 150 ? "Press E to Interact" : "Press E to Exit", 20, 90);
+
+    if (shopOpen) {
+        ctx.fillStyle = "rgba(0,0,0,0.9)"; ctx.fillRect(0,0, canvas.width, canvas.height);
+        ctx.fillStyle = "yellow"; ctx.textAlign = "center";
+        ctx.fillText("SHOP (X to Close)", canvas.width/2, 100);
+        ctx.fillText("1. Dmg +0.5 ($20)", canvas.width/2, 200);
+        ctx.fillText("2. HP +20 ($40)", canvas.width/2, 250);
+        if(player.reloadUpgrades < 4) ctx.fillText("3. Reload Speed (-1ms) ($10)", canvas.width/2, 300);
+    }
     requestAnimationFrame(loop);
 }
-
 loop();
 </script>
-
 </body>
 </html>
