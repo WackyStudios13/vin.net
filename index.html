@@ -26,7 +26,7 @@
         }
 
         .box {
-            background-color: pink;
+            background-color: rgba(255, 192, 203, 0.5);
             border: 5px solid white;
             border-radius: 25px;
             padding: 25px;
@@ -43,6 +43,7 @@
             position: absolute;
             top: 20px;
             right: 20px;
+            text-align: right;
         }
 
         .top-buttons a {
@@ -64,6 +65,28 @@
         .top-buttons a:hover {
             background-color: lightgray;
         }
+
+        /* Secret button */
+        .secret-button {
+            display: block;
+            width: 35px;
+            height: 20px;
+            margin-top: 15px;
+            margin-left: auto;
+
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            color: transparent !important;
+
+            border-radius: 8px;
+            padding: 3px !important;
+            box-shadow: none !important;
+
+            cursor: pointer;
+        }
+
+        .secret-button:hover {
+            background-color: rgba(255, 255, 255, 0.35) !important;
+        }
     </style>
 </head>
 
@@ -74,6 +97,9 @@
         <a href="about.html">About Me</a>
         <a href="sites.html">My Sites</a>
         <a href="Games.html">Minigames</a>
+
+        <!-- Secret button -->
+        <a class="secret-button" href="https://r.mtdv.me/articles/Wackystudios13"></a>
     </div>
 
     <h1>Welcome To My Site :)</h1>
