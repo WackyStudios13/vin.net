@@ -31,6 +31,7 @@
             border-radius: 25px;
             padding: 25px;
             width: 700px;
+            max-width: calc(100% - 90px);
             margin: 60px auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             color: white;
@@ -75,19 +76,164 @@
             height: 20px;
             margin-top: 15px;
             margin-left: 10px;
-
             background-color: rgba(255, 255, 255, 0.15) !important;
             color: transparent !important;
-
             border-radius: 8px;
             padding: 3px !important;
             box-shadow: none !important;
-
             cursor: pointer;
         }
 
         .secret-button:hover {
             background-color: rgba(255, 255, 255, 0.35) !important;
+        }
+
+        /* Big red music button */
+        .music-launcher {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 90px;
+            height: 90px;
+            margin: 25px auto;
+            border: 3px solid white;
+            border-radius: 50%;
+            background: #e00000;
+            color: white;
+            font-size: 38px;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .music-launcher:hover {
+            background: #ff2020;
+            transform: scale(1.08);
+        }
+
+        .music-launcher:active {
+            transform: scale(0.96);
+        }
+
+        /* Bottom-centre mini-player */
+        .mini-player {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 340px;
+            max-width: calc(100vw - 24px);
+            box-sizing: border-box;
+            padding: 15px;
+            background: #111;
+            border: 2px solid #e00000;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65);
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .mini-player[hidden] {
+            display: none;
+        }
+
+        /* Close button */
+        .player-close {
+            flex: 0 0 auto;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 25px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .player-close:hover {
+            color: #ff3030;
+        }
+
+        /* Song title */
+        .player-song {
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            overflow-wrap: anywhere;
+        }
+
+        /* Skip song button */
+        .player-skip {
+            flex: 0 0 auto;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .player-skip:hover {
+            color: #ff3030;
+        }
+
+        /* Volume control */
+        .player-volume {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .volume-label {
+            font-size: 11px;
+            color: #ccc;
+        }
+
+        .player-volume input {
+            width: 65px;
+            accent-color: #e00000;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 40px;
+                margin-top: 100px;
+            }
+
+            .top-buttons {
+                left: 10px;
+                right: 10px;
+                text-align: center;
+                white-space: normal;
+            }
+
+            .top-buttons a {
+                margin: 4px;
+                padding: 8px 10px;
+            }
+
+            .box {
+                padding: 18px;
+                margin: 35px auto;
+            }
+
+            .mini-player {
+                gap: 9px;
+                bottom: 12px;
+                padding: 12px;
+            }
+
+            .player-volume input {
+                width: 55px;
+            }
         }
     </style>
 </head>
@@ -114,7 +260,15 @@
         <h2>Hello Have Fun On My Site</h2>
         <p>I Will keep Making updates To This Site When I Can</p>
 
-    <iframe width="110" height="200" src="https://www.myinstants.com/instant/elevator-music-background-5865/embed/" frameborder="0" scrolling="no"></iframe>
+        <!-- Big red play/pause button -->
+        <button
+            class="music-launcher"
+            id="musicButton"
+            type="button"
+            aria-label="Play music"
+            title="Play / Pause Music">
+            ▶
+        </button>
 
         <p>So Yeah Have Fun On This Dumb Site!</p>
 
@@ -122,6 +276,193 @@
             I will keep updating this site. I will also add more to the minigames section :)
         </p>
     </div>
+
+    <!-- Bottom music player -->
+    <div class="mini-player" id="miniPlayer" hidden>
+
+        <!-- Close button -->
+        <button
+            class="player-close"
+            id="closePlayer"
+            type="button"
+            aria-label="Close music player"
+            title="Close player">
+            ×
+        </button>
+
+        <!-- Current song title -->
+        <div class="player-song" id="songName">
+            Ready to play
+        </div>
+
+        <!-- Skip button, immediately left of volume -->
+        <button
+            class="player-skip"
+            id="skipSong"
+            type="button"
+            aria-label="Skip to next song"
+            title="Skip song">
+            ⏭
+        </button>
+
+        <!-- Volume control -->
+        <div class="player-volume">
+            <span class="volume-label">VOLUME</span>
+            <input
+                id="volumeControl"
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.5"
+                aria-label="Music volume">
+        </div>
+    </div>
+
+    <!-- Music system -->
+    <audio id="siteAudio" preload="auto"></audio>
+
+    <script>
+        const musicButton = document.getElementById("musicButton");
+        const miniPlayer = document.getElementById("miniPlayer");
+        const closePlayer = document.getElementById("closePlayer");
+        const skipSong = document.getElementById("skipSong");
+        const songName = document.getElementById("songName");
+        const volumeControl = document.getElementById("volumeControl");
+        const audio = document.getElementById("siteAudio");
+
+        // All five MP3 files must be beside this HTML file.
+        const songs = [
+            {
+                title: "Sweden",
+                file: "Sweden.mp3"
+            },
+            {
+                title: "Home",
+                file: "Home.mp3"
+            },
+            {
+                title: "Beethoven Symphony No. 5 - l. Allegro con brio",
+                file: "Beethoven Symphony No. 5 - l. Allegro con brio.mp3"
+            },
+            {
+                title: "Welcome To The Internet",
+                file: "Welcome To The Internet.mp3"
+            },
+            {
+                title: "Passing Through (Can't the Future Just Wait)",
+                file: "Passing Through (Can't the Future Just Wait).mp3"
+            }
+        ];
+
+        let playlist = [];
+        let currentIndex = 0;
+        let hasStarted = false;
+
+        audio.volume = 0.5;
+
+        // Create a random order for the songs.
+        function shufflePlaylist() {
+            playlist = [...songs];
+
+            for (let i = playlist.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+
+                [playlist[i], playlist[j]] =
+                    [playlist[j], playlist[i]];
+            }
+
+            currentIndex = 0;
+        }
+
+        // Load a track from the shuffled playlist.
+        function loadSong(index) {
+            const song = playlist[index];
+
+            audio.src = song.file;
+            songName.textContent = song.title;
+        }
+
+        // Start or resume music.
+        async function playMusic() {
+            if (!hasStarted) {
+                shufflePlaylist();
+                hasStarted = true;
+                loadSong(currentIndex);
+            }
+
+            miniPlayer.hidden = false;
+
+            try {
+                await audio.play();
+            } catch (error) {
+                console.error("Music could not be played:", error);
+                songName.textContent =
+                    "Couldn't play song — check file names";
+            }
+
+            updateMusicButton();
+        }
+
+        // Big red button toggles between play and pause.
+        musicButton.addEventListener("click", async () => {
+            if (!hasStarted || audio.paused) {
+                await playMusic();
+            } else {
+                audio.pause();
+            }
+        });
+
+        // Update the big button icon.
+        function updateMusicButton() {
+            if (audio.paused) {
+                musicButton.textContent = "▶";
+                musicButton.setAttribute("aria-label", "Play music");
+                musicButton.title = "Play Music";
+            } else {
+                musicButton.textContent = "Ⅱ";
+                musicButton.setAttribute("aria-label", "Pause music");
+                musicButton.title = "Pause Music";
+            }
+        }
+
+        audio.addEventListener("play", updateMusicButton);
+        audio.addEventListener("pause", updateMusicButton);
+
+        // Skip to the next track, looping after the last one.
+        async function nextSong() {
+            if (!hasStarted) {
+                await playMusic();
+                return;
+            }
+
+            currentIndex++;
+
+            if (currentIndex >= playlist.length) {
+                currentIndex = 0;
+            }
+
+            loadSong(currentIndex);
+            await playMusic();
+        }
+
+        // Manual skip button.
+        skipSong.addEventListener("click", nextSong);
+
+        // Automatically advance when a song finishes.
+        audio.addEventListener("ended", nextSong);
+
+        // Close the mini-player and pause music.
+        closePlayer.addEventListener("click", () => {
+            audio.pause();
+            miniPlayer.hidden = true;
+        });
+
+        // Adjust volume.
+        volumeControl.addEventListener("input", () => {
+            audio.volume = Number(volumeControl.value);
+        });
+    </script>
 
 </body>
 </html>
