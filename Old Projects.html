@@ -33,9 +33,64 @@ body {
 
 button { font: inherit; }
 
-button:focus-visible {
+button:focus-visible,
+.back-main-button:focus-visible {
     outline: 2px solid var(--red);
     outline-offset: 4px;
+}
+
+/* NEON BACK TO MAIN SITE BUTTON */
+
+.back-main-button {
+    position: fixed;
+    top: 18px;
+    left: 20px;
+    z-index: 2000;
+
+    display: inline-block;
+    padding: 12px 17px;
+
+    background: linear-gradient(145deg, #ff303d, #a0000b);
+    color: white;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-align: center;
+    text-decoration: none;
+
+    border: 1px solid #ff6972;
+    border-radius: 7px;
+
+    box-shadow:
+        0 0 8px #ff202e,
+        0 0 18px #ff202e99,
+        0 5px 0 #65000a,
+        0 8px 16px #00000099;
+
+    transform: translateY(0);
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+.back-main-button:hover {
+    transform: translateY(-4px) scale(1.04);
+    filter: brightness(1.2);
+
+    box-shadow:
+        0 0 12px #ff202e,
+        0 0 28px #ff202ecc,
+        0 0 45px #ff202e77,
+        0 5px 0 #65000a,
+        0 12px 20px #000000aa;
+}
+
+.back-main-button:active {
+    transform: translateY(3px) scale(0.98);
+    box-shadow:
+        0 0 12px #ff202e,
+        0 2px 0 #65000a;
 }
 
 /* HEADER */
@@ -610,6 +665,13 @@ footer span:last-child { color: var(--red); }
 
     .story-title { font-size: 38px; }
     .close-button { top: 8px; right: 8px; }
+
+    .back-main-button {
+        top: 12px;
+        left: 12px;
+        padding: 10px 12px;
+        font-size: 10px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -623,6 +685,12 @@ footer span:last-child { color: var(--red); }
 </head>
 
 <body>
+
+<!-- GO BACK TO MAIN SITE -->
+
+<a href="index.html" class="back-main-button">
+    GO BACK TO MAIN SITE
+</a>
 
 <header>
     <div class="brand">
