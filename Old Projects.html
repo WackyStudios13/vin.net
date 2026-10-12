@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internet Scrapbook</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --red: #ff202e;
+    --bg: #080808;
+    --panel: #111111;
+    --text: #f4f4f4;
+    --muted: #858585;
+    --border: #292929;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+    overflow-x: hidden;
+}
+
+button { font: inherit; }
+
+button:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 4px;
+}
+
+/* HEADER */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 25px 5%;
+    border-bottom: 1px solid var(--border);
+    background: #0b0b0b;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.brand-mark {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    background: var(--red);
+    color: #080808;
+    font-size: 23px;
+    font-weight: 900;
+    transform: rotate(-5deg);
+}
+
+.brand-name {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.brand-subtitle {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #a0a0a0;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 12px #ff202e88;
+}
+
+/* MAIN */
+
+main {
+    width: min(1200px, 90%);
+    margin: 0 auto;
+    padding: 55px 0 80px;
+}
+
+.eyebrow {
+    margin-bottom: 16px;
+    color: var(--red);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.page-heading {
+    margin-bottom: 12px;
+    font-size: clamp(35px, 6vw, 64px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+}
+
+.page-heading span { color: var(--red); }
+
+.intro {
+    max-width: 560px;
+    color: #999;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+/* TOOLBAR */
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 35px 0 18px;
+    padding: 15px;
+    border: 1px solid var(--border);
+    background: #0d0d0d;
+}
+
+.filters, .tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.filter, .tool-button {
+    padding: 10px 13px;
+    border: 1px solid #303030;
+    background: #121212;
+    color: #a8a8a8;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.filter:hover, .tool-button:hover, .filter.active {
+    border-color: var(--red);
+    background: var(--red);
+    color: #080808;
+}
+
+.board-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin: 24px 0 12px;
+    color: #777;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.board-label strong {
+    color: var(--red);
+    font-weight: normal;
+}
+
+/* SCRAPBOOK BOARD */
+
+.canvas {
+    position: relative;
+    min-height: 340px;
+    padding: clamp(18px, 4vw, 42px);
+    overflow: hidden;
+    border: 1px solid #252525;
+    background-color: #050505;
+    background-image:
+        linear-gradient(#ffffff06 1px, transparent 1px),
+        linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+
+.canvas::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 90px;
+    height: 3px;
+    background: var(--red);
+    content: "";
+}
+
+.canvas::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 90px;
+    height: 3px;
+    background: var(--red);
+    content: "";
+}
+
+.scrapbook {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, 280px), 380px)
+    );
+    justify-content: center;
+    gap: 24px;
+}
+
+/* CARDS */
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 12px;
+    overflow: hidden;
+    border: 1px solid #5c151b;
+    background: #111;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: var(--red);
+    box-shadow: 0 12px 40px #ff202e1b;
+}
+
+.card-image-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border: 1px solid #292929;
+    background: #080808;
+}
+
+.card-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+}
+
+.card:hover .card-image { transform: scale(1.04); }
+
+.image-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, #08080855, transparent 60%);
+    pointer-events: none;
+}
+
+.card-topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 2px 9px;
+}
+
+.card-category {
+    color: var(--red);
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.card-number {
+    color: #555;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.card-title {
+    margin: 0 2px 8px;
+    font-size: 25px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+}
+
+.card-description {
+    margin: 0 2px 16px;
+    color: #929292;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+    padding: 12px 2px 2px;
+    border-top: 1px solid #292929;
+}
+
+.card-date {
+    color: #666;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.card-open {
+    color: var(--red);
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.card[hidden] { display: none; }
+
+/* FOOTER */
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 22px;
+    color: #666;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+footer span:last-child { color: var(--red); }
+
+/* LIGHTBOX */
+
+.lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgb(0 0 0 / 90%);
+    backdrop-filter: blur(10px);
+}
+
+.lightbox.open {
+    display: flex;
+    animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* STORY VIEWER */
+
+.lightbox-content {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    width: min(1150px, 100%);
+    height: min(90vh, 850px);
+    max-height: 90vh;
+    overflow: hidden;
+    border: 1px solid #4b191d;
+    background: #0b0b0b;
+    box-shadow: 0 0 80px #000;
+}
+
+.story-panel {
+    min-width: 0;
+    min-height: 0;
+    padding: clamp(22px, 4vw, 45px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: #622027 #111;
+    scrollbar-width: thin;
+}
+
+.story-eyebrow {
+    margin: 5px 0 13px;
+    color: var(--red);
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.story-title {
+    margin-bottom: 25px;
+    padding-right: 30px;
+    font-size: clamp(34px, 5vw, 54px);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+}
+
+.story-chapter {
+    margin: 28px 0 13px;
+    padding-left: 12px;
+    border-left: 3px solid var(--red);
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.story-text {
+    color: #c4c4c4;
+    font-size: 13px;
+    line-height: 1.9;
+    white-space: pre-line;
+}
+
+.story-image-panel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: stretch;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border-left: 1px solid #2b2b2b;
+    background: #050505;
+}
+
+.story-image-panel img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center center;
+}
+
+.story-image-label {
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+    left: 15px;
+    padding: 11px;
+    background: rgb(0 0 0 / 75%);
+    color: #aaa;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+/* CLOSE BUTTON */
+
+.close-button {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: 39px;
+    height: 39px;
+    border: 1px solid #555;
+    background: #111;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.close-button:hover {
+    border-color: var(--red);
+    background: var(--red);
+    color: #080808;
+}
+
+/* VIDEO VIEWER */
+
+.video-lightbox-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    width: min(1100px, 100%);
+    max-height: 90vh;
+    padding: clamp(20px, 4vw, 38px);
+    overflow: auto;
+    border: 1px solid #4b191d;
+    background: #0b0b0b;
+    box-shadow: 0 0 80px #000;
+}
+
+.video-viewer-heading { padding-right: 45px; }
+
+.video-viewer-heading .story-title { margin-bottom: 10px; }
+
+.video-viewer-description {
+    color: #999;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.video-player-wrap {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 180px;
+    background: #000;
+    border: 1px solid #292929;
+}
+
+.video-player {
+    display: block;
+    width: 100%;
+    max-height: 65vh;
+    background: #000;
+}
+
+/* MOBILE */
+
+@media (max-width: 760px) {
+    header { padding: 18px 5%; }
+    .brand-name { font-size: 15px; }
+    .brand-subtitle { font-size: 8px; }
+    .status { font-size: 8px; }
+    main { padding-top: 40px; }
+
+    .toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .canvas { min-height: 300px; }
+    .lightbox { padding: 10px; }
+
+    .video-lightbox-content {
+        max-height: 95vh;
+        padding: 22px 16px;
+    }
+
+    .video-player { max-height: 58vh; }
+
+    .lightbox-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) minmax(180px, 32vh);
+        width: 100%;
+        height: 95vh;
+        max-height: 95vh;
+        overflow: hidden;
+    }
+
+    .story-panel {
+        grid-row: 1;
+        min-height: 0;
+        padding: 28px 22px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .story-image-panel {
+        grid-row: 2;
+        min-height: 0;
+        border-top: 1px solid #2b2b2b;
+        border-left: 0;
+    }
+
+    .story-image-panel img {
+        width: 100%;
+        height: 100%;
+        max-height: 32vh;
+        object-fit: contain;
+        object-position: center center;
+    }
+
+    .story-title { font-size: 38px; }
+    .close-button { top: 8px; right: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="brand">
+        <div class="brand-mark">I</div>
+        <div>
+            <div class="brand-name">Internet Scrapbook</div>
+            <div class="brand-subtitle">A collection of things that exist</div>
+        </div>
+    </div>
+
+    <div class="status">
+        <span class="status-dot"></span>
+        Archive online
+    </div>
+</header>
+
+<main>
+    <div class="eyebrow">Personal archive / 001</div>
+
+    <h1 class="page-heading">Things that <span>exist.</span></h1>
+
+    <p class="intro">
+        A little corner of the internet for stories, experiments,
+        films and other things worth keeping.
+    </p>
+
+    <div class="toolbar">
+        <div class="filters" aria-label="Filter scrapbook items">
+            <button class="filter active" data-filter="all">ALL</button>
+            <button class="filter" data-filter="film">FILM</button>
+            <button class="filter" data-filter="web">WEB</button>
+            <button class="filter" data-filter="writing">WRITING</button>
+            <button class="filter" data-filter="experiments">EXPERIMENTS</button>
+        </div>
+
+        <div class="tools">
+            <button class="tool-button" id="shuffleButton">SHUFFLE</button>
+            <button class="tool-button" id="layoutButton">CHANGE LAYOUT</button>
+        </div>
+    </div>
+
+    <div class="board-label">
+        <span>Scrapbook / <strong>04 items</strong></span>
+        <span>Click to open</span>
+    </div>
+
+    <section class="canvas" aria-label="Scrapbook board">
+        <div class="scrapbook" id="scrapbook">
+
+            <!-- CARD 001: THE ENTITY -->
+
+            <button
+                class="card"
+                id="entityCard"
+                type="button"
+                data-category="writing"
+                aria-label="Open The entity story"
+            >
+                <div class="card-image-wrap">
+                    <img class="card-image" src="EntityImage.png" alt="Artwork for The entity">
+                    <div class="image-overlay"></div>
+                </div>
+
+                <div class="card-topline">
+                    <span class="card-category">Writing / Horror</span>
+                    <span class="card-number">NO. 001</span>
+                </div>
+
+                <div class="card-title">The entity</div>
+
+                <p class="card-description">
+                    A night at the fair turns into something far more
+                    terrifying than a simple shift at work.
+                </p>
+
+                <div class="card-bottom">
+                    <span class="card-date">Original story</span>
+                    <span class="card-open">Open story ↗</span>
+                </div>
+            </button>
+
+            <!-- CARD 002: I AM TAKING A BREAK -->
+
+            <button
+                class="card"
+                id="breakCard"
+                type="button"
+                data-category="film"
+                data-video="I Am Taking A Break.mp4"
+                data-poster="IWantedToQuitOnce.png"
+                data-title="I Am Taking A Break"
+                aria-label="Watch I Am Taking A Break"
+            >
+                <div class="card-image-wrap">
+                    <img class="card-image" src="IWantedToQuitOnce.png" alt="Thumbnail for I Am Taking A Break">
+                    <div class="image-overlay"></div>
+                </div>
+
+                <div class="card-topline">
+                    <span class="card-category">Film / Video</span>
+                    <span class="card-number">NO. 002</span>
+                </div>
+
+                <div class="card-title">I Am Taking A Break</div>
+
+                <p class="card-description">
+                    A video from the archive. Click to open the player.
+                </p>
+
+                <div class="card-bottom">
+                    <span class="card-date">Video</span>
+                    <span class="card-open">Watch film ↗</span>
+                </div>
+            </button>
+
+            <!-- CARD 003: COMPUTER SUCKER TRAILER -->
+
+            <button
+                class="card"
+                id="computerSuckerCard"
+                type="button"
+                data-category="film"
+                data-video="OldNeverTrailer.mp4"
+                data-poster="ComputerHackerImage.png"
+                data-title="Computer Sucker Trailer"
+                aria-label="Watch Computer Sucker Trailer"
+            >
+                <div class="card-image-wrap">
+                    <img class="card-image" src="ComputerHackerImage.png" alt="Computer Sucker Trailer thumbnail">
+                    <div class="image-overlay"></div>
+                </div>
+
+                <div class="card-topline">
+                    <span class="card-category">Film / Trailer</span>
+                    <span class="card-number">NO. 003</span>
+                </div>
+
+                <div class="card-title">Computer Sucker Trailer</div>
+
+                <p class="card-description">
+                    An original trailer from the archive. Click to watch.
+                </p>
+
+                <div class="card-bottom">
+                    <span class="card-date">Trailer</span>
+                    <span class="card-open">Watch trailer ↗</span>
+                </div>
+            </button>
+
+            <!-- CARD 004: SIGN PETITION -->
+
+            <button
+                class="card"
+                id="signPetitionCard"
+                type="button"
+                data-category="web"
+                aria-label="Visit Sign Petition website"
+            >
+                <div class="card-image-wrap">
+                    <img
+                        class="card-image"
+                        src="Sign Petition.png"
+                        alt="Sign Petition website thumbnail"
+                    >
+                    <div class="image-overlay"></div>
+                </div>
+
+                <div class="card-topline">
+                    <span class="card-category">Web / Website</span>
+                    <span class="card-number">NO. 004</span>
+                </div>
+
+                <div class="card-title">Sign Petition</div>
+
+                <p class="card-description">
+                    Visit the Dragon Vote website.
+                </p>
+
+                <div class="card-bottom">
+                    <span class="card-date">Website</span>
+                    <span class="card-open">Visit website ↗</span>
+                </div>
+            </button>
+
+        </div>
+    </section>
+
+    <footer>
+        <span>INTERNET SCRAPBOOK — PERSONAL ARCHIVE</span>
+        <span>ONE STORY. ENDLESS NIGHTMARES.</span>
+    </footer>
+</main>
+
+<!-- STORY VIEWER -->
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="storyTitle">
+    <div class="lightbox-content">
+
+        <button class="close-button" id="closeButton" type="button" aria-label="Close story">×</button>
+
+        <article class="story-panel" id="storyPanel">
+            <div class="story-eyebrow">Archive 001 / Writing</div>
+            <h2 class="story-title" id="storyTitle">The entity</h2>
+
+            <h3 class="story-chapter">Chapter 1</h3>
+
+            <p class="story-text">There I was standing there dressed in a clown costume standing next to this stupid little cart of balloons outside the fair. While everyone else was laughing and was very excited I was here because my boyfriend James broke up with me a few months ago, and he took most of the money, and I was always being a freelancer, so I did not earn much. But since we broke up I had to apply for a job at the fair. I barely was making anything “All the kids now glued to their iPhones and iPads are too distracted to want a balloon” I thought and took a big sigh. Just then I looked over and saw a girl who looked around five skipping over the bridge to the carnival singing skip to my Lou. I smiled hearing a happy child again just then a boy came up and asked for a yellow balloon “May I have a yellow balloon” he muttered. I asked in the most Clowney voice if he had 0.25 quid “Do you have the right amount of quid to pay” I asked. He handed over the money and I gave him the balloon. Little did I know the horrors that would bring.
+
+My shift is almost over, and it is around 11:40PM when there is an announcement over the speakers saying “May all staff meet at the circus tent I will repeat may all staff meet at the circus tent thank you” The man announced. I jogged to the tent to see red and blue flashing lights from the outside of the tent. I opened the tent door and ran down to the stage where I saw all the staff, some police officers, some danger tape and what seemed to be a body wrapped in a potato sack. I ran down the steps and my boss as I was running down he put a fist out to stop me. The officer asked, “Do you guys have any CCTV of what might have happened” he asked. “No but normally we get a staff member to record the show, so we can send it to the actors. I can show it to you” he said. “Please, show me” asked the officer. My boss handed him a laptop playing the video just as the officer grabbed it the lights flickered and when they came back on the body in the potato sack was standing up. All the officers looked behind them with a terrified look on their faces for a moment. It looked like they were frozen. Then in almost an instant they were floating up in the air whispering some inaudible words under their breath. Suddenly from backstage came out the saw for the cutting in half act. And it started floating to and moved to the officer up in the air. Suddenly, it started carving some words in his stomach. I could not read it. Then it chopped his head off and dropped him to the ground. The other officers screamed and ran. I walked over to his body and the words it carved out said I am back Erin, and it was written directly to me. I saw the child take off the sack. It was the boy I gave the balloons to but this time his white t-shirt and blue jeans were covered in blood and the blood was coming from his mouth. He had an evil grin and red eyes with his hair being even more messy than before. Then a spirit or something like it with red eyes came out of him and his body dropped to the floor as the thing with red eyes evaporated.</p>
+
+            <h3 class="story-chapter">Chapter 2</h3>
+
+            <p class="story-text">I screamed and instantly ran out of the tent all the way home. I did not even care that I forgot to wipe my clown makeup off. As I stumbled through the streets of Rye in England I saw a strange old man approaching me. He was wearing a black beanie, black leather jacket, blue jeans and big brown boots. He was also smoking a gigantic pipe. I looked at him as he approached me. I could finally see he was wearing an eyepatch on his right eye. He was only a few steps away from me then he sort of paused then he opened his mouth blood started coming down from his mouth going everywhere on the floor he dropped his pipe then both his eyes burst out as 1000’s of maggots, witchity grubs, beetles and mainly bees and wasps flew out of him. I screamed running all the way home. I got home to my apartment. I took a shower trying to forget all the events that happened tonight and also to wash off my clown make up. I put my pink rugrats pyjamas on and look at myself in the mirror. Then the lights flicker and when they come back on I find the words YOU CANNOT ESCAPE ERIN!!! Written in blood in the mirror. I splash my face with some cold water and go to bed.
+
+I wake up to what seems to be in a bar on the ground. I go up to the chair to order a drink and I ask for a shot of vodka “May I please have a shot of vodka” I ask “Sure have it on me” says the bartender. He whips up a shot of vodka and then I guzzle it down. Then hours later, me being the dumb alcoholic that I am, ordered more drinks. That night a few hours later I ask “Come on just one more bottle of beer” I ask very tipsy and light headed at this point I don’t even remember where I am. “Sorry mam but the bar is closing in 20 minutes and you are very drunk” the bartender tells me. I stomp my feet and start walking home. On the other side of the street I see a bald man with glowing red eyes. I blink and he is right in front of me. He says to me in a demonic voice “You know Erin I need a new host for my body” he says. I giggle not understanding anything he is saying. “Would you like to be that new host?” he asks me. “Yeah sure, whatever, just one drink on the house,” I tell him. “We have plenty of drinks where you are going” the thing tells me. “Ok then let’s give it up for this man. Sure I will do whatever you say mister” I respond. “Ok then” he says then he evaporates into thin air with the particles going into me. All I can see now is red and I wake up in a stretcher, convulsing blood is coming out of my mouth and I am wriggling everywhere just like the chest burster scene in Aliens. But still all I could see was red.</p>
+        </article>
+
+        <aside class="story-image-panel">
+            <img src="EntityImage.png" alt="The entity story artwork">
+            <div class="story-image-label">The entity / Archive 001</div>
+        </aside>
+
+    </div>
+</div>
+
+<!-- SHARED VIDEO VIEWER -->
+
+<div class="lightbox" id="videoLightbox" role="dialog" aria-modal="true" aria-labelledby="videoTitle">
+    <div class="video-lightbox-content">
+
+        <button class="close-button" id="closeVideoButton" type="button" aria-label="Close video">×</button>
+
+        <div class="video-viewer-heading">
+            <div class="story-eyebrow">Archive / Film</div>
+            <h2 class="story-title" id="videoTitle">I Am Taking A Break</h2>
+            <p class="video-viewer-description">Press play to watch the video.</p>
+        </div>
+
+        <div class="video-player-wrap">
+            <video class="video-player" id="breakVideo" controls preload="metadata" poster="IWantedToQuitOnce.png" aria-label="Scrapbook film player">
+                <source src="I Am Taking A Break.mp4" type="video/mp4">
+                Your browser does not support HTML video.
+            </video>
+        </div>
+    </div>
+</div>
+
+<script>
+const scrapbook = document.getElementById("scrapbook");
+const cards = Array.from(document.querySelectorAll(".card"));
+
+const entityCard = document.getElementById("entityCard");
+const signPetitionCard = document.getElementById("signPetitionCard");
+
+const lightbox = document.getElementById("lightbox");
+const closeButton = document.getElementById("closeButton");
+
+const videoLightbox = document.getElementById("videoLightbox");
+const closeVideoButton = document.getElementById("closeVideoButton");
+const breakVideo = document.getElementById("breakVideo");
+
+const videoTitle = document.getElementById("videoTitle");
+const videoSource = breakVideo.querySelector("source");
+
+const filterButtons = document.querySelectorAll(".filter");
+const shuffleButton = document.getElementById("shuffleButton");
+const layoutButton = document.getElementById("layoutButton");
+
+let previousFocus = null;
+let previousVideoFocus = null;
+
+/* OPEN THE SIGN PETITION WEBSITE */
+
+signPetitionCard.addEventListener("click", function() {
+    window.open(
+        "https://0367545-star.github.io/The-dragon-vote/",
+        "_blank",
+        "noopener,noreferrer"
+    );
+});
+
+/* OPEN THE STORY */
+
+function openStory() {
+    previousFocus = document.activeElement;
+    lightbox.classList.add("open");
+    document.body.style.overflow = "hidden";
+    closeButton.focus();
+}
+
+/* CLOSE THE STORY */
+
+function closeStory() {
+    lightbox.classList.remove("open");
+    document.body.style.overflow = "";
+
+    if (previousFocus) {
+        previousFocus.focus();
+    }
+}
+
+entityCard.addEventListener("click", openStory);
+closeButton.addEventListener("click", closeStory);
+
+/* OPEN ANY VIDEO CARD */
+
+function openVideo(event) {
+    const card = event.currentTarget;
+
+    previousVideoFocus = document.activeElement;
+
+    const videoFile = card.dataset.video;
+    const posterFile = card.dataset.poster;
+    const title = card.dataset.title;
+
+    videoTitle.textContent = title;
+    breakVideo.poster = posterFile;
+
+    breakVideo.pause();
+    breakVideo.currentTime = 0;
+
+    videoSource.src = videoFile;
+    videoSource.type = "video/mp4";
+    breakVideo.load();
+
+    videoLightbox.classList.add("open");
+    document.body.style.overflow = "hidden";
+    closeVideoButton.focus();
+}
+
+/* BOTH FILMS USE THE SAME PLAYER */
+
+document.querySelectorAll("[data-video]").forEach(function(card) {
+    card.addEventListener("click", openVideo);
+});
+
+/* CLOSE THE VIDEO VIEWER */
+
+function closeVideo() {
+    videoLightbox.classList.remove("open");
+
+    breakVideo.pause();
+    breakVideo.currentTime = 0;
+
+    document.body.style.overflow = "";
+
+    if (previousVideoFocus) {
+        previousVideoFocus.focus();
+    }
+}
+
+closeVideoButton.addEventListener("click", closeVideo);
+
+/* CLICKING OUTSIDE A VIEWER CLOSES IT */
+
+lightbox.addEventListener("click", function(event) {
+    if (event.target === lightbox) {
+        closeStory();
+    }
+});
+
+videoLightbox.addEventListener("click", function(event) {
+    if (event.target === videoLightbox) {
+        closeVideo();
+    }
+});
+
+/* ESCAPE CLOSES THE VIEWERS */
+
+document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape" && lightbox.classList.contains("open")) {
+        closeStory();
+    }
+
+    if (event.key === "Escape" && videoLightbox.classList.contains("open")) {
+        closeVideo();
+    }
+});
+
+/* CATEGORY FILTERS */
+
+filterButtons.forEach(function(button) {
+    button.addEventListener("click", function() {
+        filterButtons.forEach(function(item) {
+            item.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        const filter = button.dataset.filter;
+
+        cards.forEach(function(card) {
+            const category = card.dataset.category;
+            card.hidden = filter !== "all" && filter !== category;
+        });
+    });
+});
+
+/* SHUFFLE ANIMATION */
+
+shuffleButton.addEventListener("click", function() {
+    const visibleCards = cards.filter(function(card) {
+        return !card.hidden;
+    });
+
+    visibleCards.forEach(function(card, index) {
+        card.animate(
+            [
+                { transform: "rotate(0deg) scale(1)" },
+                {
+                    transform: index % 2 === 0
+                        ? "rotate(-2deg) scale(1.03)"
+                        : "rotate(2deg) scale(1.03)"
+                },
+                { transform: "rotate(0deg) scale(1)" }
+            ],
+            {
+                duration: 350,
+                easing: "ease-out"
+            }
+        );
+    });
+});
+
+/* CHANGE CARD LAYOUT */
+
+layoutButton.addEventListener("click", function() {
+    const compact = scrapbook.classList.toggle("compact-layout");
+
+    if (compact) {
+        scrapbook.style.gridTemplateColumns = "minmax(0, 260px)";
+
+        cards.forEach(function(card) {
+            card.style.padding = "8px";
+        });
+
+        layoutButton.textContent = "WIDE LAYOUT";
+    } else {
+        scrapbook.style.gridTemplateColumns =
+            "repeat(auto-fit, minmax(min(100%, 280px), 380px))";
+
+        cards.forEach(function(card) {
+            card.style.padding = "12px";
+        });
+
+        layoutButton.textContent = "CHANGE LAYOUT";
+    }
+});
+</script>
+
+</body>
+</html>
