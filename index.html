@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Site</title>
 
     <style>
@@ -9,7 +11,6 @@
             cursor: url("Witch Hat Cursor.png") 0 0, auto;
         }
 
-        /* Keep the custom cursor on interactive elements too */
         a, button, input, select, textarea, label {
             cursor: url("Witch Hat Cursor.png") 0 0, pointer;
         }
@@ -20,6 +21,7 @@
         }
 
         body {
+            background-color: #111;
             background-image: url("FUNImages/IllusionBackdrop.jpeg");
             background-size: cover;
             background-position: center;
@@ -49,7 +51,7 @@
             text-align: center;
         }
 
-        /* Top-right buttons */
+        /* TOP-RIGHT BUTTONS */
         .top-buttons {
             position: absolute;
             top: 20px;
@@ -79,7 +81,7 @@
             background-color: lightgray;
         }
 
-        /* Secret button */
+        /* SECRET BUTTON */
         .secret-button {
             display: inline-block;
             width: 35px;
@@ -97,7 +99,7 @@
             background-color: rgba(255, 255, 255, 0.35) !important;
         }
 
-        /* Big red music button */
+        /* BIG RED MUSIC BUTTON */
         .music-launcher {
             display: flex;
             align-items: center;
@@ -123,7 +125,7 @@
             transform: scale(0.96);
         }
 
-        /* Bottom-centre mini-player */
+        /* BOTTOM-CENTRE MINI PLAYER */
         .mini-player {
             position: fixed;
             bottom: 20px;
@@ -149,7 +151,7 @@
             display: none;
         }
 
-        /* Close button */
+        /* CLOSE BUTTON */
         .player-close {
             flex: 0 0 auto;
             border: none;
@@ -164,7 +166,7 @@
             color: #ff3030;
         }
 
-        /* Song title */
+        /* SONG TITLE */
         .player-song {
             flex: 1;
             min-width: 0;
@@ -174,7 +176,7 @@
             overflow-wrap: anywhere;
         }
 
-        /* Skip song button */
+        /* SKIP SONG BUTTON */
         .player-skip {
             flex: 0 0 auto;
             border: none;
@@ -188,7 +190,7 @@
             color: #ff3030;
         }
 
-        /* Volume control */
+        /* VOLUME CONTROL */
         .player-volume {
             flex: 0 0 auto;
             display: flex;
@@ -207,6 +209,7 @@
             accent-color: #e00000;
         }
 
+        /* EXISTING SMALL-SCREEN RULES */
         @media (max-width: 600px) {
             h1 {
                 font-size: 40px;
@@ -240,12 +243,208 @@
                 width: 55px;
             }
         }
+
+        /* ========================================
+           MOBILE SUPPORT
+           These overrides do not change desktop.
+           ======================================== */
+
+        @media screen and (max-width: 600px) {
+
+            html,
+            body {
+                width: 100%;
+                min-height: 100%;
+            }
+
+            body {
+                background-color: #111;
+                background-attachment: scroll;
+                background-size: cover;
+                background-position: center top;
+                background-repeat: no-repeat;
+                overflow-x: hidden;
+            }
+
+            /* MOBILE NAVIGATION */
+            .top-buttons {
+                position: relative;
+                top: auto;
+                right: auto;
+                left: auto;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                width: 100%;
+                padding: 15px 12px;
+                box-sizing: border-box;
+                text-align: center;
+                white-space: normal;
+            }
+
+            .top-buttons a,
+            .top-buttons a:first-child {
+                margin: 0;
+                padding: 12px 14px;
+                font-size: 15px;
+                border-radius: 12px;
+                max-width: 100%;
+                text-align: center;
+            }
+
+            .top-buttons a.secret-button {
+                width: 35px;
+                height: 25px;
+                padding: 3px !important;
+                margin: 0;
+            }
+
+            /* MOBILE HEADING */
+            h1 {
+                font-size: clamp(32px, 9vw, 46px);
+                line-height: 1.15;
+                margin: 25px 12px 0;
+                overflow-wrap: anywhere;
+            }
+
+            /* LARGER MAIN CONTENT BOX */
+            .box {
+                width: calc(100% - 24px);
+                max-width: none;
+                box-sizing: border-box;
+                margin: 30px auto 100px;
+                padding: 25px 18px;
+                border: 4px solid white;
+                border-radius: 22px;
+                font-size: 18px;
+                line-height: 1.6;
+                overflow-wrap: anywhere;
+            }
+
+            .box h2 {
+                font-size: 26px;
+                line-height: 1.25;
+                margin: 0 0 18px;
+            }
+
+            .box p {
+                font-size: 17px;
+                line-height: 1.7;
+                margin: 16px 0;
+            }
+
+            /* LARGER TOUCH-FRIENDLY MUSIC BUTTON */
+            .music-launcher {
+                width: 100px;
+                height: 100px;
+                font-size: 42px;
+                margin: 30px auto;
+            }
+
+            /* RESPONSIVE BOTTOM MUSIC PLAYER */
+            .mini-player {
+                position: fixed;
+                bottom: 12px;
+                left: 12px;
+                right: 12px;
+                transform: none;
+                width: auto;
+                max-width: none;
+                gap: 10px;
+                padding: 13px 10px;
+                border-radius: 16px;
+            }
+
+            .player-close {
+                font-size: 28px;
+                padding: 5px;
+            }
+
+            .player-song {
+                font-size: 13px;
+                line-height: 1.3;
+                overflow-wrap: anywhere;
+            }
+
+            .player-skip {
+                font-size: 23px;
+                padding: 5px;
+            }
+
+            .player-volume {
+                gap: 7px;
+            }
+
+            .volume-label {
+                font-size: 10px;
+            }
+
+            .player-volume input {
+                width: 65px;
+                max-width: 18vw;
+                min-height: 24px;
+            }
+
+            /* TOUCHSCREEN BEHAVIOUR */
+            button,
+            .top-buttons a {
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+        }
+
+        /* EXTRA-SMALL PHONES */
+        @media screen and (max-width: 380px) {
+
+            h1 {
+                font-size: 32px;
+            }
+
+            .top-buttons {
+                gap: 7px;
+                padding: 12px 8px;
+            }
+
+            .top-buttons a,
+            .top-buttons a:first-child {
+                font-size: 13px;
+                padding: 10px;
+            }
+
+            .box {
+                width: calc(100% - 16px);
+                padding: 20px 14px;
+            }
+
+            .box h2 {
+                font-size: 23px;
+            }
+
+            .box p {
+                font-size: 16px;
+            }
+
+            .mini-player {
+                gap: 5px;
+                padding: 10px 7px;
+            }
+
+            .player-song {
+                font-size: 11px;
+            }
+
+            .player-volume input {
+                width: 42px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
-    <!-- Top-right buttons -->
+    <!-- TOP NAVIGATION BUTTONS -->
     <div class="top-buttons">
         <a href="about.html">About Me</a>
         <a href="sites.html">My Sites</a>
@@ -253,20 +452,23 @@
         <a href="Games.html">Minigames</a>
         <a href="Old%20Projects.html">Internet Scrapbook</a>
 
-        <!-- Secret button -->
+        <!-- SECRET BUTTON -->
         <a class="secret-button"
            href="https://r.mtdv.me/articles/Wackystudios13"
            target="_blank"
-           rel="noopener noreferrer"></a>
+           rel="noopener noreferrer"
+           aria-label="Secret page"
+           title="Secret"></a>
     </div>
 
     <h1>Welcome To My Site :)</h1>
 
     <div class="box">
         <h2>Hello Have Fun On My Site</h2>
+
         <p>I Will keep Making updates To This Site When I Can</p>
 
-        <!-- Big red play/pause button -->
+        <!-- BIG RED PLAY/PAUSE BUTTON -->
         <button
             class="music-launcher"
             id="musicButton"
@@ -283,10 +485,9 @@
         </p>
     </div>
 
-    <!-- Bottom music player -->
+    <!-- BOTTOM MUSIC PLAYER -->
     <div class="mini-player" id="miniPlayer" hidden>
 
-        <!-- Close button -->
         <button
             class="player-close"
             id="closePlayer"
@@ -296,12 +497,10 @@
             ×
         </button>
 
-        <!-- Current song title -->
         <div class="player-song" id="songName">
             Ready to play
         </div>
 
-        <!-- Skip button -->
         <button
             class="player-skip"
             id="skipSong"
@@ -311,7 +510,6 @@
             ⏭
         </button>
 
-        <!-- Volume control -->
         <div class="player-volume">
             <span class="volume-label">VOLUME</span>
             <input
@@ -325,7 +523,7 @@
         </div>
     </div>
 
-    <!-- Music system -->
+    <!-- MUSIC SYSTEM -->
     <audio id="siteAudio" preload="auto"></audio>
 
     <script>
@@ -337,7 +535,7 @@
         const volumeControl = document.getElementById("volumeControl");
         const audio = document.getElementById("siteAudio");
 
-        // All five MP3 files must be beside this HTML file.
+        // ALL MP3 FILES MUST BE BESIDE THIS HTML FILE.
         const songs = [
             {
                 title: "Sweden",
@@ -348,7 +546,7 @@
                 file: "Home.mp3"
             },
             {
-                title: "Beethoven Symphony No. 5 - l. Allegro con brio",
+                title: "Beethoven Symphony No. 5 - I. Allegro con brio",
                 file: "Beethoven Symphony No. 5 - l. Allegro con brio.mp3"
             },
             {
@@ -358,6 +556,14 @@
             {
                 title: "Passing Through (Can't the Future Just Wait)",
                 file: "Passing Through (Can't the Future Just Wait).mp3"
+            },
+            {
+                title: "House Of The Rising Sun",
+                file: "House Of The Rising Sun.mp3"
+            },
+            {
+                title: "Blue (Da Ba Dee)",
+                file: "Blue (Da Ba Dee).mp3"
             }
         ];
 
@@ -367,7 +573,7 @@
 
         audio.volume = 0.5;
 
-        // Create a random order for the songs.
+        // SHUFFLE THE PLAYLIST.
         function shufflePlaylist() {
             playlist = [...songs];
 
@@ -381,45 +587,24 @@
             currentIndex = 0;
         }
 
-        // Load a track from the shuffled playlist.
+        // LOAD A TRACK.
         function loadSong(index) {
             const song = playlist[index];
 
+            if (!song) {
+                return false;
+            }
+
+            audio.pause();
             audio.src = song.file;
+            audio.load();
+
             songName.textContent = song.title;
+
+            return true;
         }
 
-        // Start or resume music.
-        async function playMusic() {
-            if (!hasStarted) {
-                shufflePlaylist();
-                hasStarted = true;
-                loadSong(currentIndex);
-            }
-
-            miniPlayer.hidden = false;
-
-            try {
-                await audio.play();
-            } catch (error) {
-                console.error("Music could not be played:", error);
-                songName.textContent =
-                    "Couldn't play song — check file names";
-            }
-
-            updateMusicButton();
-        }
-
-        // Big red button toggles between play and pause.
-        musicButton.addEventListener("click", async () => {
-            if (!hasStarted || audio.paused) {
-                await playMusic();
-            } else {
-                audio.pause();
-            }
-        });
-
-        // Update the big button icon.
+        // UPDATE THE PLAY/PAUSE ICON.
         function updateMusicButton() {
             if (audio.paused) {
                 musicButton.textContent = "▶";
@@ -432,39 +617,91 @@
             }
         }
 
+        // START OR RESUME MUSIC.
+        async function playMusic() {
+            if (!hasStarted) {
+                shufflePlaylist();
+                hasStarted = true;
+
+                if (!loadSong(currentIndex)) {
+                    songName.textContent = "No songs available";
+                    return;
+                }
+            }
+
+            miniPlayer.hidden = false;
+
+            try {
+                await audio.play();
+            } catch (error) {
+                console.error("Music could not be played:", error);
+
+                songName.textContent =
+                    "Couldn't play song — check file names";
+
+                updateMusicButton();
+            }
+        }
+
+        // BIG RED BUTTON: PLAY OR PAUSE.
+        musicButton.addEventListener("click", async () => {
+            if (!hasStarted || audio.paused) {
+                await playMusic();
+            } else {
+                audio.pause();
+            }
+        });
+
         audio.addEventListener("play", updateMusicButton);
         audio.addEventListener("pause", updateMusicButton);
 
-        // Skip to the next track, looping after the last one.
+        // SKIP TO THE NEXT TRACK.
         async function nextSong() {
             if (!hasStarted) {
                 await playMusic();
                 return;
             }
 
-            currentIndex++;
+            currentIndex = (currentIndex + 1) % playlist.length;
 
-            if (currentIndex >= playlist.length) {
-                currentIndex = 0;
+            if (!loadSong(currentIndex)) {
+                return;
             }
 
-            loadSong(currentIndex);
-            await playMusic();
+            miniPlayer.hidden = false;
+
+            try {
+                await audio.play();
+            } catch (error) {
+                console.error("Couldn't play the next song:", error);
+
+                songName.textContent =
+                    "Couldn't play song — check file names";
+
+                updateMusicButton();
+            }
         }
 
-        // Manual skip button.
+        // MANUAL SKIP.
         skipSong.addEventListener("click", nextSong);
 
-        // Automatically advance when a song finishes.
+        // AUTOMATICALLY ADVANCE WHEN A SONG FINISHES.
         audio.addEventListener("ended", nextSong);
 
-        // Close the mini-player and pause music.
+        // REPORT MISSING OR UNPLAYABLE FILES.
+        audio.addEventListener("error", () => {
+            if (hasStarted && audio.src) {
+                console.error("Audio file failed to load:", audio.src);
+            }
+        });
+
+        // CLOSE THE PLAYER AND PAUSE MUSIC.
         closePlayer.addEventListener("click", () => {
             audio.pause();
             miniPlayer.hidden = true;
         });
 
-        // Adjust volume.
+        // ADJUST VOLUME.
         volumeControl.addEventListener("input", () => {
             audio.volume = Number(volumeControl.value);
         });
