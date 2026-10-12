@@ -4,6 +4,16 @@
     <title>My Site</title>
 
     <style>
+        /* CUSTOM WITCH HAT CURSOR */
+        html, body, body * {
+            cursor: url("Witch Hat Cursor.png") 0 0, auto;
+        }
+
+        /* Keep the custom cursor on interactive elements too */
+        a, button, input, select, textarea, label {
+            cursor: url("Witch Hat Cursor.png") 0 0, pointer;
+        }
+
         html, body {
             height: 100%;
             margin: 0;
@@ -81,7 +91,6 @@
             border-radius: 8px;
             padding: 3px !important;
             box-shadow: none !important;
-            cursor: pointer;
         }
 
         .secret-button:hover {
@@ -101,7 +110,6 @@
             background: #e00000;
             color: white;
             font-size: 38px;
-            cursor: pointer;
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
             transition: transform 0.2s, background 0.2s;
         }
@@ -149,7 +157,6 @@
             color: white;
             font-size: 25px;
             line-height: 1;
-            cursor: pointer;
             padding: 2px;
         }
 
@@ -174,7 +181,6 @@
             background: transparent;
             color: white;
             font-size: 20px;
-            cursor: pointer;
             padding: 2px;
         }
 
@@ -199,7 +205,6 @@
         .player-volume input {
             width: 65px;
             accent-color: #e00000;
-            cursor: pointer;
         }
 
         @media (max-width: 600px) {
