@@ -244,13 +244,8 @@
             }
         }
 
-        /* ========================================
-           MOBILE SUPPORT
-           These overrides do not change desktop.
-           ======================================== */
-
+        /* MOBILE SUPPORT */
         @media screen and (max-width: 600px) {
-
             html,
             body {
                 width: 100%;
@@ -266,7 +261,6 @@
                 overflow-x: hidden;
             }
 
-            /* MOBILE NAVIGATION */
             .top-buttons {
                 position: relative;
                 top: auto;
@@ -301,7 +295,6 @@
                 margin: 0;
             }
 
-            /* MOBILE HEADING */
             h1 {
                 font-size: clamp(32px, 9vw, 46px);
                 line-height: 1.15;
@@ -309,7 +302,6 @@
                 overflow-wrap: anywhere;
             }
 
-            /* LARGER MAIN CONTENT BOX */
             .box {
                 width: calc(100% - 24px);
                 max-width: none;
@@ -335,7 +327,6 @@
                 margin: 16px 0;
             }
 
-            /* LARGER TOUCH-FRIENDLY MUSIC BUTTON */
             .music-launcher {
                 width: 100px;
                 height: 100px;
@@ -343,7 +334,6 @@
                 margin: 30px auto;
             }
 
-            /* RESPONSIVE BOTTOM MUSIC PLAYER */
             .mini-player {
                 position: fixed;
                 bottom: 12px;
@@ -387,7 +377,6 @@
                 min-height: 24px;
             }
 
-            /* TOUCHSCREEN BEHAVIOUR */
             button,
             .top-buttons a {
                 -webkit-tap-highlight-color: transparent;
@@ -397,7 +386,6 @@
 
         /* EXTRA-SMALL PHONES */
         @media screen and (max-width: 380px) {
-
             h1 {
                 font-size: 32px;
             }
@@ -444,7 +432,7 @@
 
 <body>
 
-    <!-- TOP NAVIGATION BUTTONS -->
+    <!-- TOP NAVIGATION -->
     <div class="top-buttons">
         <a href="about.html">About Me</a>
         <a href="sites.html">My Sites</a>
@@ -452,7 +440,6 @@
         <a href="Games.html">Minigames</a>
         <a href="Old%20Projects.html">Internet Scrapbook</a>
 
-        <!-- SECRET BUTTON -->
         <a class="secret-button"
            href="https://r.mtdv.me/articles/Wackystudios13"
            target="_blank"
@@ -468,7 +455,6 @@
 
         <p>I Will keep Making updates To This Site When I Can</p>
 
-        <!-- BIG RED PLAY/PAUSE BUTTON -->
         <button
             class="music-launcher"
             id="musicButton"
@@ -485,7 +471,7 @@
         </p>
     </div>
 
-    <!-- BOTTOM MUSIC PLAYER -->
+    <!-- MINI MUSIC PLAYER -->
     <div class="mini-player" id="miniPlayer" hidden>
 
         <button
@@ -523,7 +509,6 @@
         </div>
     </div>
 
-    <!-- MUSIC SYSTEM -->
     <audio id="siteAudio" preload="auto"></audio>
 
     <script>
@@ -535,7 +520,7 @@
         const volumeControl = document.getElementById("volumeControl");
         const audio = document.getElementById("siteAudio");
 
-        // ALL MP3 FILES MUST BE BESIDE THIS HTML FILE.
+        // ALL SONG FILES MUST BE BESIDE THIS HTML FILE.
         const songs = [
             {
                 title: "Sweden",
@@ -570,6 +555,7 @@
         let playlist = [];
         let currentIndex = 0;
         let hasStarted = false;
+        let isAdvancing = false;
 
         audio.volume = 0.5;
 
@@ -604,7 +590,7 @@
             return true;
         }
 
-        // UPDATE THE PLAY/PAUSE ICON.
+        // UPDATE THE PLAY/PAUSE BUTTON.
         function updateMusicButton() {
             if (audio.paused) {
                 musicButton.textContent = "▶";
@@ -634,16 +620,18 @@
             try {
                 await audio.play();
             } catch (error) {
-                console.error("Music could not be played:", error);
+                console.error(
+                    "Music could not be played:",
+                    audio.src,
+                    error
+                );
 
-                songName.textContent =
-                    "Couldn't play song — check file names";
-
-                updateMusicButton();
+                // Try the next track if the current track fails.
+                await nextSong();
             }
         }
 
-        // BIG RED BUTTON: PLAY OR PAUSE.
+        // PLAY/PAUSE BUTTON.
         musicButton.addEventListener("click", async () => {
             if (!hasStarted || audio.paused) {
                 await playMusic();
@@ -655,44 +643,77 @@
         audio.addEventListener("play", updateMusicButton);
         audio.addEventListener("pause", updateMusicButton);
 
-        // SKIP TO THE NEXT TRACK.
+        // TRY THE NEXT TRACKS UNTIL ONE PLAYS.
         async function nextSong() {
+            if (isAdvancing) {
+                return;
+            }
+
             if (!hasStarted) {
                 await playMusic();
                 return;
             }
 
-            currentIndex = (currentIndex + 1) % playlist.length;
-
-            if (!loadSong(currentIndex)) {
-                return;
-            }
-
+            isAdvancing = true;
             miniPlayer.hidden = false;
 
             try {
-                await audio.play();
-            } catch (error) {
-                console.error("Couldn't play the next song:", error);
+                // Each track is attempted no more than once
+                // during this advance operation.
+                for (let attempt = 0; attempt < playlist.length; attempt++) {
+                    currentIndex =
+                        (currentIndex + 1) % playlist.length;
 
+                    const song = playlist[currentIndex];
+
+                    if (!loadSong(currentIndex)) {
+                        continue;
+                    }
+
+                    try {
+                        await audio.play();
+
+                        // A track has started successfully.
+                        return;
+                    } catch (error) {
+                        console.error(
+                            "Could not play " + song.file,
+                            error
+                        );
+                    }
+                }
+
+                // Nothing in the playlist could be played.
+                audio.pause();
                 songName.textContent =
-                    "Couldn't play song — check file names";
+                    "Unable to play songs — check filenames";
 
                 updateMusicButton();
+
+            } finally {
+                isAdvancing = false;
             }
         }
 
-        // MANUAL SKIP.
+        // MANUAL SKIP BUTTON.
         skipSong.addEventListener("click", nextSong);
 
         // AUTOMATICALLY ADVANCE WHEN A SONG FINISHES.
         audio.addEventListener("ended", nextSong);
 
-        // REPORT MISSING OR UNPLAYABLE FILES.
+        // HANDLE FILE LOADING ERRORS.
         audio.addEventListener("error", () => {
-            if (hasStarted && audio.src) {
-                console.error("Audio file failed to load:", audio.src);
+            if (!hasStarted || !audio.src || isAdvancing) {
+                return;
             }
+
+            console.error(
+                "Audio file failed to load:",
+                audio.currentSrc || audio.src
+            );
+
+            // Allow the error event to finish before advancing.
+            nextSong();
         });
 
         // CLOSE THE PLAYER AND PAUSE MUSIC.
