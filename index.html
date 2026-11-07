@@ -549,6 +549,10 @@
             {
                 title: "Blue (Da Ba Dee)",
                 file: "Blue (Da Ba Dee).mp3"
+            },
+            {
+                title: "I Wish",
+                file: "I Wish.mp3"
             }
         ];
 
@@ -658,9 +662,9 @@
             miniPlayer.hidden = false;
 
             try {
-                // Each track is attempted no more than once
-                // during this advance operation.
-                for (let attempt = 0; attempt < playlist.length; attempt++) {
+                // Try each other track no more than once.
+                // Do not loop back and retry the song that was playing.
+                for (let attempt = 0; attempt < playlist.length - 1; attempt++) {
                     currentIndex =
                         (currentIndex + 1) % playlist.length;
 
@@ -672,8 +676,6 @@
 
                     try {
                         await audio.play();
-
-                        // A track has started successfully.
                         return;
                     } catch (error) {
                         console.error(
@@ -683,10 +685,9 @@
                     }
                 }
 
-                // Nothing in the playlist could be played.
                 audio.pause();
                 songName.textContent =
-                    "Unable to play songs — check filenames";
+                    "Other tracks failed — check MP3 filenames";
 
                 updateMusicButton();
 
@@ -700,21 +701,6 @@
 
         // AUTOMATICALLY ADVANCE WHEN A SONG FINISHES.
         audio.addEventListener("ended", nextSong);
-
-        // HANDLE FILE LOADING ERRORS.
-        audio.addEventListener("error", () => {
-            if (!hasStarted || !audio.src || isAdvancing) {
-                return;
-            }
-
-            console.error(
-                "Audio file failed to load:",
-                audio.currentSrc || audio.src
-            );
-
-            // Allow the error event to finish before advancing.
-            nextSong();
-        });
 
         // CLOSE THE PLAYER AND PAUSE MUSIC.
         closePlayer.addEventListener("click", () => {
